@@ -1,0 +1,43 @@
+column,role,note,n_missing
+FY_Quarter,dropped,key,0
+GDP_growth_old,target,PRIMARY TARGET (2011-12 base),6
+GFCE,dropped,level; overlaps FiscalDeficit_pct_GDP signal,2
+PFCE,dropped,level; trends dominate; consumption captured via GDP lags,2
+GFCF,dropped,collinear with GFCF_YoY (keep growth form),2
+Exports,dropped,collinear with Exports_YoY,2
+Imports,dropped,collinear with Imports_YoY,2
+NetExports,dropped,"= Exports - Imports (derived, redundant)",2
+FiscalDeficit_pct_GDP,feature,model feature,0
+Repo_QtrAvg,feature,model feature,0
+CPI_Inflation,feature,model feature,3
+IIP_growth,feature,model feature,4
+INR_USD,feature,model feature,0
+INR_USD_vol,feature,model feature,0
+Brent_USD,feature,model feature,0
+M3_level,dropped,collinear with M3_level_YoY,0
+GDP_level_old,dropped,"level, base-specific scale; use GDP_growth_old instead",2
+GDP_level_new,dropped,"level, base-specific scale; use GDP_growth_new instead",44
+GDP_growth_new,dropped,"alternate target (base sensitivity), not a predictor",48
+base_year_target,dropped,provenance label,0
+has_new_base,dropped,provenance flag,0
+GFCF_YoY,feature,model feature,4
+Exports_YoY,feature,model feature,4
+Imports_YoY,feature,model feature,4
+M3_level_YoY,feature,model feature,4
+RealRate,feature,model feature,3
+CrudeINR,dropped,level; keep CrudeINR_YoY,0
+CrudeINR_YoY,feature,model feature,4
+M3_growth_YoY,dropped,exact alias of M3_level_YoY,4
+RealM3_YoY,feature,model feature,4
+GDP_proxy_old,dropped,intermediate: built only to make ratios; not a predictor,2
+InvestmentRate,feature,model feature,2
+TradeOpenness,feature,model feature,2
+Quarter,dropped,encoded as Q1..Q4 dummies,0
+Q1,feature,model feature,0
+Q2,feature,model feature,0
+Q3,feature,model feature,0
+Q4,feature,model feature,0
+COVID,feature,model feature,0
+GDP_growth_old_lag1,feature,model feature,6
+GDP_growth_old_lag4,feature,model feature,8
+BaseRevision_gap,dropped,target-derived; for the base-year story only,50
