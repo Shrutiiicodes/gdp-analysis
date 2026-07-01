@@ -14,10 +14,13 @@ Pipeline:
 WHY THE BASE-YEAR STAGE MATTERS
     On 27-Feb-2026 MoSPI rebased GDP from base 2011-12 -> 2022-23. We have BOTH
     series on disk, so we carry both targets through the panel:
-        GDP_growth_old   (2011-12 base)  <- the internally-consistent training target
-        GDP_growth_new   (2022-23 base)  <- computed from new-base levels, for the
-                                            base-sensitivity / "what-if rebase" story
-    Every row also gets a `base_year_target` provenance label.
+       GDP_growth_old   (2011-12 base)  <- base-consistent source; covers most of the
+                                            series (through 2025-26 Q2)
+        GDP_growth_new   (2022-23 base)  <- new-base growth; supplies the post-rebasing
+                                            tail AND drives the base-sensitivity story
+    These are spliced into ONE continuous column, `GDP_growth`, which is the actual
+    modelling / forecasting target downstream. Every row also carries a
+    `base_year_target` label and a `GDP_growth_source` tag for provenance.
 
 NOTE ON FILE PATHS
     Filenames are matched with glob patterns, so this works whether your GDP files
@@ -149,8 +152,10 @@ panel["_k"] = panel["FY_Quarter"].map(order_key)
 panel = panel.sort_values("_k").drop(columns="_k").reset_index(drop=True)
 
 # 5) FEATURES
-# Provenance: which base year does the row's *primary* GDP target come from?
-panel["base_year_target"] = "2011-12"          # we train on the old, consistent series
+# Provenance only: which base vintage does this row's GDP level/growth originate from?
+# NOTE: the actual training target is the spliced `GDP_growth` built lower down — this
+# label is not itself the target.
+panel["base_year_target"] = "2011-12"
 panel["has_new_base"] = panel["GDP_growth_new"].notna().astype(int)
 
 # YoY of level series -> base-invariant, stationary-ish features
