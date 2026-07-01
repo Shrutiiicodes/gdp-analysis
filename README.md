@@ -11,10 +11,12 @@ of the National Accounts from base year 2011-12 to 2022-23.
 4. Forecasts GDP growth for FY2026-27 Q1 and Q2 (SARIMA).
 5. Decomposes realised growth into demand-side contributions.
 
-## How to run (from the project root, `GDP/`)
+## How to run (from the project root, `gdp-analysis/`)
 ```bash
-# 1. preprocessing: build the repo-rate interim files from the raw changelog
+# 1. preprocessing: regenerate the repo-rate interim files from the raw changelog
 python src/make_repo_rate.py
+#    (Other interim files — expenditure, GDP contributions, CPI, fiscal deficit — are
+#     curated inputs already in data/interim/; see docs/data_provenance.md for sources.)
 
 # 2. assemble the quarterly master table -> data/processed/composite_master_quarterly.csv
 python src/build_composite.py
@@ -33,7 +35,7 @@ Requirements: `pandas numpy scikit-learn statsmodels shap matplotlib seaborn ope
 
 ## Folder structure
 ```
-GDP/
+gdp-analysis/
   data/raw/        # original downloaded files (gdp, cpi, iip, fx, crude, m3, repo)
   data/interim/    # cleaned intermediate CSVs (repo rates, cpi, expenditure, etc.)
   data/processed/  # composite_master_quarterly.csv  <- the analysis table
