@@ -25,9 +25,9 @@ python src/build_composite.py
 #    notebooks/03_contributions.ipynb -> demand-side decomposition
 #    notebooks/04_scenarios.ipynb     -> scenario analysis
 ```
-The notebooks set `PROJECT = Path("C:/Users/asus/Projects/GDP")` at the top of the first cell —
-change that one line if the project lives elsewhere. After a path change, use
-**Kernel -> Restart & Run All**.
+The notebooks auto-detect the project root (they walk up from the notebook's folder), so
+no path editing is needed after cloning. To force a location, set the `GDP_PROJECT`
+environment variable. Then use **Kernel -> Restart & Run All**.
 
 Requirements: `pandas numpy scikit-learn statsmodels shap matplotlib seaborn openpyxl joblib`.
 
