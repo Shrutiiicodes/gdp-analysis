@@ -8,7 +8,7 @@ of the National Accounts from base year 2011-12 to 2022-23.
 1. Collects 12 public macro indicators and combines them into one quarterly master table.
 2. Engineers features, prunes redundant ones (correlation + VIF), and tests stationarity.
 3. Compares forecasting models under time-aware validation and identifies the top growth drivers.
-4. Forecasts GDP growth for FY2026-27 Q1 and Q2 (SARIMA).
+4. Forecasts GDP growth for FY2026-27 Q1 and Q2 (SARIMAX with a deterministic COVID dummy).
 5. Decomposes realised growth into demand-side contributions.
 
 ## How to run (from the project root, `gdp-analysis/`)
@@ -58,9 +58,10 @@ gdp-analysis/
 - **Top predictors of growth:** industrial production (IIP) and fixed investment (GFCF), by a
   consensus of Lasso, permutation importance and SHAP.
 - **Largest accounting contributor:** private consumption (~3.6 pp average), then investment.
-- **Forecast (SARIMA + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).
-- **Base-year sensitivity:** the driver ranking shifts across the 2011-12 vs 2022-23 base
-  (rank-correlation about -0.27 on the overlap) — reported as a caveat.
+- **Forecast (SARIMAX + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).
+- **Base-year sensitivity:** the driver ranking appears to shift across the 2011-12 vs
+  2022-23 base (rank-correlation ~ -0.27), but this rests on only ~10 overlap quarters,
+  so it's directional at best — reported as a caveat, not a precise estimate.
 
 ## Data sources
 MoSPI (GDP, IIP), RBI (repo rate, CPI, M3, INR/USD reference rates), CGA / Union Budget

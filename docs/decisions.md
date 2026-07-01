@@ -41,13 +41,14 @@ and revisited. Newest decisions at the bottom of each section.
   models; time-aware validation (fixed holdout + expanding-window CV), never random k-fold.
 - **Baselines are mandatory.** naive(t-1) and seasonal-naive; the random walk is the bar.
 - **Explanation vs forecasting are separated.** Regression/ML on contemporaneous features
-  answers *what drives GDP* (backtested); SARIMA answers *what's next quarter* (forecast).
+  answers *what drives GDP* (backtested); SARIMAX answers *what's next quarter* (forecast).
 - **"Top driver" is a consensus**, not one method: Lasso + permutation + SHAP averaged.
 
 ## Forecasting FY2026-27
-- **SARIMA, not regression.** Future quarters have no exogenous data (CPI/IIP/etc. don't
-  exist yet), so the forecast uses the series' own history.
-- **COVID as a known exogenous dummy.** The 2020-21 swings distorted the first SARIMA fit
+- **SARIMAX, not regression.** Future quarters have no *unknown* exogenous data (CPI/IIP/etc.
+  don't exist yet), so the forecast uses the series' own history plus a deterministic COVID
+  dummy (known 0 ahead) — technically SARIMAX, not pure SARIMA.
+- **COVID as a known exogenous dummy.** The 2020-21 swings distorted the first SARIMAX fit
   (implausible 2.5% point); a COVID dummy (1 in FY21, 0 elsewhere *and* in the future)
   stabilized it (AIC ≈306→282) to a sensible ~7%/~6% with an 80% interval.
 
