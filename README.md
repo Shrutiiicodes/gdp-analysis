@@ -42,7 +42,6 @@ GDP/
     collapse_monthly.py # monthly/fortnightly -> quarterly collapse functions
     make_repo_rate.py   # raw repo changelog -> monthly + quarterly repo files
     build_composite.py  # assembles the master table from all sources
-  visualizations/   # the visualizations and explanations
   notebooks/       # 01_eda, 02_forecasting, 03_contributions, 04_scenarios
   outputs/
     figures/       # all charts (PNG)
