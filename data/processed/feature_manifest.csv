@@ -1,7 +1,7 @@
 column,role,note,n_missing
 FY_Quarter,dropped,key,0
 GDP_growth,target,PRIMARY TARGET: spliced continuous series (old 2011-12 + new 2022-23 tail),6
-GDP_growth_old,target-source,2011-12 base; spliced into GDP_growth,66
+GDP_growth_old,target-source,2011-12 base; spliced into GDP_growth,8
 GFCE,dropped,level; overlaps FiscalDeficit_pct_GDP signal,2
 PFCE,dropped,level; trends dominate; consumption captured via GDP lags,2
 GFCF,dropped,collinear with GFCF_YoY (keep growth form),2
@@ -25,20 +25,20 @@ GFCF_YoY,feature,model feature,4
 Exports_YoY,feature,model feature,4
 Imports_YoY,feature,model feature,4
 M3_level_YoY,feature,model feature,4
-RealRate,feature,model feature,3
+RealRate,candidate,engineered; not selected into notebook-02 FEATURES,3
 CrudeINR,dropped,level; keep CrudeINR_YoY,0
 CrudeINR_YoY,feature,model feature,4
 M3_growth_YoY,dropped,exact alias of M3_level_YoY,4
-RealM3_YoY,feature,model feature,4
+RealM3_YoY,candidate,engineered; not selected into notebook-02 FEATURES,4
 GDP_proxy_old,dropped,intermediate: built only to make ratios; not a predictor,2
 InvestmentRate,feature,model feature,2
 TradeOpenness,feature,model feature,2
 Quarter,dropped,encoded as Q1..Q4 dummies,0
-Q1,feature,model feature,0
-Q2,feature,model feature,0
-Q3,feature,model feature,0
-Q4,feature,model feature,0
-COVID,feature,model feature,0
-GDP_growth_old_lag1,feature,model feature,6
-GDP_growth_old_lag4,feature,model feature,8
+Q1,candidate,seasonal dummy; not in ML FEATURES (SARIMAX handles seasonality),0
+Q2,candidate,seasonal dummy; not in ML FEATURES (SARIMAX handles seasonality),0
+Q3,candidate,seasonal dummy; not in ML FEATURES (SARIMAX handles seasonality),0
+Q4,candidate,seasonal dummy; not in ML FEATURES (SARIMAX handles seasonality),0
+COVID,exog,SARIMAX exogenous dummy (forecast); not in ML feature matrix,0
+GDP_growth_lag1,feature,model feature (AR lag on spliced target),6
+GDP_growth_lag4,feature,model feature (seasonal AR lag on spliced target),8
 BaseRevision_gap,dropped,target-derived; for the base-year story only,50

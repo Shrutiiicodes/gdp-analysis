@@ -31,7 +31,7 @@ The notebooks auto-detect the project root (they walk up from the notebook's fol
 no path editing is needed after cloning. To force a location, set the `GDP_PROJECT`
 environment variable. Then use **Kernel -> Restart & Run All**.
 
-Requirements: `pandas numpy scikit-learn statsmodels shap matplotlib seaborn openpyxl joblib`.
+Requirements: `pandas numpy scikit-learn statsmodels shap matplotlib seaborn openpyxl joblib scipy`.
 
 ## Folder structure
 ```
