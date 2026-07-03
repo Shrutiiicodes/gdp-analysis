@@ -61,6 +61,16 @@ forecast horizon, and the discontinued old-base tail) — see notes.
 | `GDP_growth_lag1` | GDP growth, 1 quarter ago | `GDP_growth.shift(1)` | 56 |
 | `GDP_growth_lag4` | GDP growth, 4 quarters ago (same quarter last year) | `GDP_growth.shift(4)` | 54 |
 
+## Optional columns (added by `src/add_bank_credit.py`)
+
+These columns are appended to the master CSV only if the raw bank credit file is present.
+They are **not** produced by `build_composite.py` and will be absent from a fresh build.
+
+| Column | Description | Unit | Source | Non-null |
+|---|---|---|---|---|
+| `BankCredit_YoY` | Scheduled commercial bank credit, YoY growth (quarter-end stock) | % YoY | RBI WSS Table 4 | varies |
+| `GST_YoY` | GST collection, YoY growth (quarterly sum of monthly collections) | % YoY | GSTN / CGA | varies |
+
 ## Calendar, regime & provenance
 
 | Column | Description | Unit | Non-null |
@@ -71,9 +81,34 @@ forecast horizon, and the discontinued old-base tail) — see notes.
 | `base_year_target` | Which base the training target uses (label) | — | 62 |
 | `has_new_base` | 1 if a new-base GDP figure exists for the quarter | 0/1 | 62 |
 
+---
+
+# Data Dictionary — `gva_sectoral_quarterly.csv`
+
+Tidy quarterly GVA table produced by `src/gva_sectors.py` from the RBI DBIE raw export.
+Stored at `data/interim/gva_sectoral_quarterly.csv`.
+
+| Column | Description | Unit | Source |
+|---|---|---|---|
+| `FY_Quarter` | Fiscal-year quarter label | — | derived |
+| `Agriculture` | GVA at constant prices — Agriculture, Forestry & Fishing | ₹ crore | MoSPI via RBI DBIE |
+| `Industry` | GVA — Mining + Manufacturing + Utilities + Construction | ₹ crore | MoSPI via RBI DBIE |
+| `Services` | GVA — Trade/Transport/Comm + Financial/RE + Public Admin + Other | ₹ crore | MoSPI via RBI DBIE |
+| `GVA_total` | Sum of the three headline sectors | ₹ crore | derived |
+| `Agriculture_YoY` | Agriculture GVA, YoY growth | % YoY | derived |
+| `Industry_YoY` | Industry GVA, YoY growth | % YoY | derived |
+| `Services_YoY` | Services GVA, YoY growth | % YoY | derived |
+| `GVA_total_YoY` | Total GVA, YoY growth | % YoY | derived |
+| `Agriculture_contrib` | Agriculture contribution to aggregate GVA growth | pp | derived |
+| `Industry_contrib` | Industry contribution to aggregate GVA growth | pp | derived |
+| `Services_contrib` | Services contribution to aggregate GVA growth | pp | derived |
+
+---
+
 ## Notes on missing values (all structural, not errors)
 - **Head NaNs** (2011-12): YoY features need four prior quarters; some monthly series start in 2012.
 - **`GDP_growth_old` ends at 2025-26 Q2**: the 2011-12 series was discontinued after the 27-Feb-2026 rebasing.
 - **`GDP_*_new` start at 2022-23**: the new series doesn't exist before its base year.
 - **`GDP_growth` is complete through 2025-26 Q4** via splicing; **FY2026-27 Q1/Q2** are the empty forecast horizon.
 - **Leakage warning:** the `c_*` contribution columns (in `data/interim/gdp_growth_contributions_quarterly.csv`) sum to GDP growth and must **not** be used as model features — they belong to notebook 03 (decomposition) only.
+- **`BankCredit_YoY` / `GST_YoY`** are only present if `add_bank_credit.py` has been run with the raw files available.
