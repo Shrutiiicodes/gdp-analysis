@@ -118,15 +118,27 @@ def load_gva(proj: Path) -> pd.DataFrame:
     """Return a quarterly frame indexed by FY_Quarter with one column per
     headline sector (constant-price GVA levels, Rs crore)."""
     folder = proj / "data" / "raw" / "gva"
-    hits = list(folder.glob("gva_by_activity_quarterly.*")) + \
-           list(folder.glob("*GVA*.*")) + list(folder.glob("*gva*.*"))
+    # Only the RAW DBIE export (xlsx/xls). Never a processed .csv, and never our
+    # own tidy output, so a stray file can't be picked up by mistake.
+    cands = sorted(p for p in folder.glob("*.xls*")
+                   if "sectoral" not in p.name.lower())
+    preferred = [p for p in cands if p.name == "gva_by_activity_quarterly.xlsx"]
+    hits = preferred or cands
     if not hits:
         raise FileNotFoundError(
-            f"No GVA file in {folder}. Download the DBIE quarterly GVA-by-activity "
-            f"(constant prices) table per this file's docstring.")
+            f"No raw DBIE .xlsx in {folder}. Save the DBIE 'Quarterly Estimates "
+            f"of GVA at Basic Prices (Constant Prices)' export there as "
+            f"gva_by_activity_quarterly.xlsx (not a .csv).")
     f = hits[0]
-    raw = pd.read_excel(f, header=None) if f.suffix.lower() in (".xlsx", ".xls") \
-        else pd.read_csv(f, header=None)
+    print(f"reading: {f.name}")
+    raw = pd.read_excel(f, header=None)
+
+    # guard: reject an already-folded file (has our output columns, not sub-sectors)
+    flat = raw.astype(str).values.ravel()
+    if any("_YoY" in str(v) or "_contrib" in str(v) for v in flat):
+        raise ValueError(
+            f"{f.name} looks like a PROCESSED file (contains _YoY/_contrib "
+            f"columns), not the raw DBIE export. Point me at the raw download.")
 
     # find the header row = the row whose cells map to the most sub-sectors
     score = raw.apply(lambda r: sum(_head_of(v) is not None for v in r), axis=1)
