@@ -37,6 +37,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import warnings
+warnings.filterwarnings("ignore", message="Workbook contains no default style")  # RBI xlsx noise only
+
 try:
     from utils import fy_quarter, order_key, find_project
 except ImportError:
