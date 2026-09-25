@@ -139,6 +139,8 @@ gdp-analysis/
   (p ≈ 0.41): it moves with GDP rather than ahead of it.
 - **Largest accounting contributor:** private consumption (~3.6 pp average), then investment.
 - **Forecast (SARIMAX + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).
+  **Out-of-sample check:** MoSPI's Q1 FY2026-27 estimate (released 31 Aug 2026) is **7.8%**, 0.7 pp above
+  the point forecast and inside the 80% interval (2.4-11.8). Q2 is due end-November 2026.
 - **Production-side structure:** Services dominate GVA (~55% share); Industry and Agriculture
   are more volatile. Sectoral contributions are visualised in notebook 05.
 - **Base-year sensitivity:** the driver ranking appears to shift across the 2011-12 vs
