@@ -61,8 +61,8 @@ python -m pytest tests -v
 jupyter nbconvert --to notebook --execute --inplace notebooks/0*.ipynb
 ```
 
-The notebooks auto-detect the project root (they walk up from the notebook's folder), so
-no path editing is needed after cloning. To force a location, set the `GDP_PROJECT`
+The notebooks auto-detect the project root (they walk up from the kernel's working directory,
+which under Jupyter is the notebook's folder), so no path editing is needed after cloning. To force a location, set the `GDP_PROJECT`
 environment variable. Then use **Kernel → Restart & Run All**.
 
 Requirements: see `requirements.txt`. Install with `pip install -r requirements.txt`.

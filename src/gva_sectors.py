@@ -28,7 +28,6 @@ OUTPUT (outputs/figures/ + a tidy CSV in data/interim/):
 Run:  python src/gva_sectors.py
 """
 
-import os
 import re
 from pathlib import Path
 

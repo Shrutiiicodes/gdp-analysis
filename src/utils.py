@@ -53,7 +53,7 @@ def find_project():
     """Project root = the directory containing data/processed.
        Order: $GDP_PROJECT, then walk up from the current working directory."""
     env = os.environ.get("GDP_PROJECT")
-    if env and (Path(env).expanduser() / "data").is_dir():
+    if env and (Path(env).expanduser() / "data" / "processed").is_dir():
         return Path(env).expanduser().resolve()
     for cand in (Path.cwd(), *Path.cwd().parents):
         if (cand / "data" / "processed").is_dir():

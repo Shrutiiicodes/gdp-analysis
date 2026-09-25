@@ -10,5 +10,5 @@ joblib==1.5.3
 openpyxl==3.1.5
 # notebooks / tooling
 ipykernel==7.3.0
-nbconvert
-pytest
+nbconvert==7.17.1
+pytest==9.1.1

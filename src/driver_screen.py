@@ -26,9 +26,6 @@ CAVEATS (state these in the report):
 Run:  python src/driver_screen.py
 """
 
-import os
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 

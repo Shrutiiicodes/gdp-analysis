@@ -15,7 +15,6 @@ average. The day-weighted monthly average correctly handles months where the rat
 changed mid-month.
 """
 
-from pathlib import Path
 import pandas as pd
 
 try:
