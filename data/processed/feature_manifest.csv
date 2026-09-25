@@ -19,7 +19,6 @@ M3_level,dropped,collinear with M3_level_YoY,0
 GDP_level_old,dropped,"level, base-specific scale; use GDP_growth_old instead",2
 GDP_level_new,dropped,"level, base-specific scale; use GDP_growth_new instead",44
 GDP_growth_new,dropped,"alternate target (base sensitivity), not a predictor",48
-base_year_target,dropped,provenance label,0
 has_new_base,dropped,provenance flag,0
 GFCF_YoY,feature,model feature,4
 Exports_YoY,feature,model feature,4

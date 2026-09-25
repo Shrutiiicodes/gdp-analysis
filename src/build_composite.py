@@ -154,10 +154,6 @@ panel["_k"] = panel["FY_Quarter"].map(order_key)
 panel = panel.sort_values("_k").drop(columns="_k").reset_index(drop=True)
 
 # 5) FEATURES
-# Provenance only: which base vintage does this row's GDP level/growth originate from?
-# NOTE: the actual training target is the spliced `GDP_growth` built lower down — this
-# label is not itself the target.
-panel["base_year_target"] = "2011-12"
 panel["has_new_base"] = panel["GDP_growth_new"].notna().astype(int)
 
 # YoY of level series -> base-invariant, stationary-ish features
@@ -203,6 +199,14 @@ panel["GDP_growth_source"] = np.where(panel["GDP_growth_old"].notna(), "2011-12 
 # autoregressive features on the CONTINUOUS target (legit: past values, no leakage)
 panel["GDP_growth_lag1"] = panel["GDP_growth"].shift(1)
 panel["GDP_growth_lag4"] = panel["GDP_growth"].shift(4)
+
+# --- OPTIONAL PROXIES (skipped with a message if the raw files are absent) ----
+try:
+    from add_bank_credit import add_credit, add_gst
+except ImportError:
+    from .add_bank_credit import add_credit, add_gst
+panel = add_credit(panel, DATA.parent)
+panel = add_gst(panel, DATA.parent)
 
 # 6) SAVE + quick report
 out_csv = OUT / "composite_master_quarterly.csv"

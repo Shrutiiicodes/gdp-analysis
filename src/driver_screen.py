@@ -34,6 +34,11 @@ import pandas as pd
 
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
+# grangercausalitytests prints a table unless verbose=False, and verbose=False is deprecated;
+# silence just that notice until statsmodels offers a quiet default.
+import warnings
+warnings.filterwarnings("ignore", message="verbose is deprecated")
+
 try:
     from utils import find_project
 except ImportError:

@@ -45,3 +45,17 @@ def test_master_has_no_yoy_where_level_missing():
     assert len(df) == 62 and not df["FY_Quarter"].duplicated().any()
     for lvl, yoy in LEVEL_TO_YOY:
         assert df.loc[df[lvl].isna(), yoy].isna().all(), f"{yoy} has values where {lvl} is NaN"
+
+
+def test_master_contains_bank_credit_and_no_constant_label():
+    df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv")
+    assert "BankCredit_YoY" in df.columns
+    assert "base_year_target" not in df.columns
+
+
+def test_add_credit_missing_file_is_noop(tmp_path):
+    from add_bank_credit import add_credit
+    (tmp_path / "data" / "raw" / "credit").mkdir(parents=True)
+    master = pd.DataFrame({"FY_Quarter": ["2011-12 Q1"]})
+    out = add_credit(master, tmp_path)
+    assert list(out.columns) == ["FY_Quarter"]

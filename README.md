@@ -23,20 +23,17 @@ python src/make_repo_rate.py
 #     curated inputs already in data/interim/; see docs/data_provenance.md for sources.)
 
 # 2. Assemble the quarterly master table -> data/processed/composite_master_quarterly.csv
+#    (also appends BankCredit_YoY if data/raw/credit/bank_credit_outstanding.csv is present)
 python src/build_composite.py
 
-# 3. [Optional] Append bank credit and/or GST collections to the master table
-#    (requires data/raw/credit/bank_credit_outstanding.csv or a raw RBI WSS Table-4 xlsx)
-python src/add_bank_credit.py
-
-# 4. [Optional] Run the predictive-causality (Granger) driver screen standalone
+# 3. [Optional] Run the predictive-causality (Granger) driver screen standalone
 python src/driver_screen.py
 
-# 5. [Optional] Build the GVA sectoral view
+# 4. [Optional] Build the GVA sectoral view
 #    (requires data/raw/gva/gva_by_activity_quarterly.xlsx from RBI DBIE)
 python src/gva_sectors.py
 
-# 6. Open the notebooks in order and Run All
+# 5. Open the notebooks in order and Run All
 #    notebooks/01_eda.ipynb           -> cleaning, EDA, feature selection
 #    notebooks/02_forecasting.ipynb   -> models, accuracy, drivers, forecast, saved models
 #    notebooks/03_contributions.ipynb -> demand-side decomposition
@@ -77,12 +74,13 @@ gdp-analysis/
     processed/
       composite_master_quarterly.csv      <- the main analysis table
       composite_master_quarterly.xlsx     <- same, Excel format
+      feature_manifest.csv               <- per-column role labels (feature/dropped/target)
   src/
     utils.py            # shared helpers (fiscal-quarter logic, file finding)
     collapse_monthly.py # monthly/fortnightly -> quarterly collapse functions
     make_repo_rate.py   # raw repo changelog -> monthly + quarterly repo files
     build_composite.py  # assembles the master table from all sources
-    add_bank_credit.py  # [optional] appends BankCredit_YoY and GST_YoY to master
+    add_bank_credit.py  # optional BankCredit_YoY / GST_YoY, called by build_composite.py
     driver_screen.py    # Granger-causality / predictive-causality screen
     gva_sectors.py      # production-side GVA sectoral builder (Agriculture/Industry/Services)
   notebooks/
@@ -92,9 +90,9 @@ gdp-analysis/
     04_scenarios.ipynb      # scenario analysis
     05_gva_sectors.ipynb    # production-side GVA sectoral breakdown
   outputs/
-    figures/       # all charts (PNG): 01_*, 02_*, 03_*, 04_*, 05a/05b/05c_*
+    figures/       # all charts (PNG): 02_*, 03_*, 04_*, 05a/05b/05c_*, 06_*
     forecasts/     # gdp_forecast_FY2026_27.csv
-    models/        # saved SARIMAX + best ML model (.pkl)
+    models/        # saved SARIMAX (.pkl) + best ML model (.joblib)
   docs/
     data_dictionary.md   # per-column documentation for composite_master_quarterly.csv
     data_provenance.md   # source and reproducibility notes for interim files

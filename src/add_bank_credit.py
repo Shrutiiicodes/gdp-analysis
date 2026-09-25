@@ -1,14 +1,22 @@
-import os
+"""
+add_bank_credit.py
+------------------
+Optional proxies appended to the master table BY build_composite.py (not run directly):
+    BankCredit_YoY  from data/raw/credit/bank_credit_outstanding.csv (Date, BankCredit)
+                    or a raw RBI WSS Table-4 export named WSS_Table*.xlsx in the same folder
+    GST_YoY         from data/raw/gst/gst_collections_monthly.csv (Date, GST)
+If a file is missing the column is simply not added.
+"""
+
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 try:
-    from utils import order_key, find_project
+    from utils import order_key
     from collapse_monthly import collapse_qtr_end, add_fy_quarter
 except ImportError:
-    from .utils import order_key, find_project
+    from .utils import order_key
     from .collapse_monthly import collapse_qtr_end, add_fy_quarter
 
 
@@ -69,33 +77,3 @@ def add_gst(master: pd.DataFrame, proj: Path,
     yoy = _yoy(q, "GST_level", "GST_YoY")
     return master.merge(yoy, on="FY_Quarter", how="left")
 
-
-def main():
-    proj = find_project()
-    mpath = proj / "data" / "processed" / "composite_master_quarterly.csv"
-    master = pd.read_csv(mpath)
-
-    before = set(master.columns)
-    master = add_credit(master, proj)
-    master = add_gst(master, proj)
-    added = [c for c in master.columns if c not in before]
-
-    if not added:
-        print("\nNothing added. Download the raw file(s) first (see docstring).")
-        return
-
-    master.to_csv(mpath, index=False)
-    print(f"\nMerged {added} and rewrote {mpath.name}.")
-
-    # Re-run the driver screen including the new proxy/proxies.
-    try:
-        from driver_screen import run, DEFAULT_FEATURES
-    except ImportError:
-        from .driver_screen import run, DEFAULT_FEATURES
-    table = run(DEFAULT_FEATURES + added)
-    print("\nDriver screen WITH new banking proxies:")
-    print(table.to_string(index=False))
-
-
-if __name__ == "__main__":
-    main()
