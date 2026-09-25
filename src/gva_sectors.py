@@ -30,15 +30,12 @@ Run:  python src/gva_sectors.py
 
 import os
 import re
-import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-warnings.filterwarnings("ignore")
 
 try:
     from utils import fy_quarter, order_key, find_project
@@ -185,7 +182,7 @@ def build(proj: Path):
 
     # --- sector YoY growth + contribution to aggregate GVA growth -------------
     for s in HEAD_ORDER + ["GVA_total"]:
-        gva[f"{s}_YoY"] = gva[s].pct_change(4) * 100
+        gva[f"{s}_YoY"] = gva[s].pct_change(4, fill_method=None) * 100
     # contribution_s = (level_s(t) - level_s(t-4)) / total(t-4) * 100
     for s in HEAD_ORDER:
         gva[f"{s}_contrib"] = (gva[s] - gva[s].shift(4)) / gva["GVA_total"].shift(4) * 100

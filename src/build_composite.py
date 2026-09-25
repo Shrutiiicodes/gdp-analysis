@@ -28,13 +28,14 @@ NOTE ON FILE PATHS
     the glob pattern needs touching.
 """
 
-import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-warnings.filterwarnings("ignore")
+# RBI xlsx exports carry no default style; that one openpyxl notice is noise, everything else stays visible.
+import warnings
+warnings.filterwarnings("ignore", message="Workbook contains no default style")
 
 # Shared helpers live in utils.py / collapse_monthly.py (run as `python src/build_composite.py`
 # so that src/ is on the import path).
@@ -98,6 +99,7 @@ m3 = pd.read_excel(find_one(RAW / "m3", "*Sources of Money Stock*.xlsx"),
 m3 = m3.rename(columns={"M3 (1+2+3+4-5)": "M3"})[["Date", "M3"]].dropna()
 m3["Date"] = pd.to_datetime(m3["Date"], errors="coerce")
 m3 = m3.dropna()
+# ponytail: hardcoded 2026-03-31 book-closure row; generalise to "any 31-Mar row ~2x its neighbours" if a new vintage adds another
 m3 = m3[~((m3["Date"].dt.year == 2026) & (m3["Date"].dt.month == 3) & (m3["Date"].dt.day == 31))]
 m3_q = collapse_qtr_end(m3, "Date", "M3", "M3_level")
 
@@ -139,7 +141,7 @@ gdp_new = pd.DataFrame(
     {"FY_Quarter": list(new_map.values()),
      "GDP_level_new": [pd.to_numeric(new_x.iloc[17, c], errors="coerce") for c in new_map]}
 ).sort_values("FY_Quarter", key=lambda s: s.map(order_key))
-gdp_new["GDP_growth_new"] = gdp_new["GDP_level_new"].pct_change(4) * 100
+gdp_new["GDP_growth_new"] = gdp_new["GDP_level_new"].pct_change(4, fill_method=None) * 100
 
 
 # 3) JOIN -- attach each piece to the spine
@@ -160,12 +162,12 @@ panel["has_new_base"] = panel["GDP_growth_new"].notna().astype(int)
 
 # YoY of level series -> base-invariant, stationary-ish features
 for col in ["GFCF", "Exports", "Imports", "M3_level"]:
-    panel[col + "_YoY"] = panel[col].pct_change(4) * 100
+    panel[col + "_YoY"] = panel[col].pct_change(4, fill_method=None) * 100
 
 # --- macro-meaningful engineered features ---------------------------------
 panel["RealRate"]      = panel["Repo_QtrAvg"] - panel["CPI_Inflation"]      # real policy rate
 panel["CrudeINR"]      = panel["Brent_USD"] * panel["INR_USD"]             # oil bill in rupees
-panel["CrudeINR_YoY"]  = panel["CrudeINR"].pct_change(4) * 100
+panel["CrudeINR_YoY"]  = panel["CrudeINR"].pct_change(4, fill_method=None) * 100
 panel["M3_growth_YoY"] = panel["M3_level_YoY"]                             # alias, readability
 panel["RealM3_YoY"]    = panel["M3_level_YoY"] - panel["CPI_Inflation"]    # real money growth
 

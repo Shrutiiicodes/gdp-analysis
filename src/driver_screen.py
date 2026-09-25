@@ -27,13 +27,10 @@ Run:  python src/driver_screen.py
 """
 
 import os
-import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-warnings.filterwarnings("ignore")
 
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 

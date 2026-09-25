@@ -15,7 +15,7 @@ except ImportError:
 def _yoy(df_q: pd.DataFrame, level_col: str, out_col: str) -> pd.DataFrame:
     """4-quarter YoY % change on a quarterly-ordered frame."""
     d = df_q.sort_values("FY_Quarter", key=lambda s: s.map(order_key)).copy()
-    d[out_col] = d[level_col].pct_change(4) * 100
+    d[out_col] = d[level_col].pct_change(4, fill_method=None) * 100
     return d[["FY_Quarter", out_col]]
 
 

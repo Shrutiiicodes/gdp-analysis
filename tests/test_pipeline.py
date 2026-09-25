@@ -33,3 +33,15 @@ def test_find_project_raises_outside_repo(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     with pytest.raises(FileNotFoundError):
         find_project()
+
+
+LEVEL_TO_YOY = [("GFCF", "GFCF_YoY"), ("Exports", "Exports_YoY"), ("Imports", "Imports_YoY"),
+                ("M3_level", "M3_level_YoY"), ("M3_level", "M3_growth_YoY"),
+                ("CrudeINR", "CrudeINR_YoY")]
+
+
+def test_master_has_no_yoy_where_level_missing():
+    df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv")
+    assert len(df) == 62 and not df["FY_Quarter"].duplicated().any()
+    for lvl, yoy in LEVEL_TO_YOY:
+        assert df.loc[df[lvl].isna(), yoy].isna().all(), f"{yoy} has values where {lvl} is NaN"
