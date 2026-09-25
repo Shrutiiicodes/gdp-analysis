@@ -90,7 +90,7 @@ gdp-analysis/
     04_scenarios.ipynb      # scenario analysis
     05_gva_sectors.ipynb    # production-side GVA sectoral breakdown
   outputs/
-    figures/       # all charts (PNG): 02_*, 03_*, 04_*, 05a/05b/05c_*, 06_*
+    figures/       # all charts (PNG): 01a-d_* (EDA), 02a-e_*, 03b-e_*, 04a/b_*, 05a-c_*
     forecasts/     # gdp_forecast_FY2026_27.csv
     models/        # saved SARIMAX (.pkl) + best ML model (.joblib)
   docs/
