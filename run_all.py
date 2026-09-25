@@ -2,7 +2,7 @@
 run_all.py -- the whole pipeline in one command (from anywhere inside the repo):
 
     python run_all.py            # rebuild interim + master table, GVA view, notebooks 01-05, tests
-    python run_all.py --fetch    # same, but first refresh Brent from FRED (the only API source)
+    python run_all.py --fetch    # same, but first refresh Brent (FRED) and the new-base GDP series (MoSPI API)
 
 Stops at the first failing step and exits non-zero, so CI can gate on it.
 """
@@ -24,6 +24,7 @@ STEPS = [
     ("tests",          [PY, "-m", "pytest", "tests", "-q"]),
 ]
 if "--fetch" in sys.argv:
+    STEPS.insert(0, ("fetch GDP (MoSPI API)", [PY, "src/fetch_mospi.py"]))
     STEPS.insert(0, ("fetch Brent (FRED)", [PY, "src/fetch_brent.py"]))
 
 for name, cmd in STEPS:

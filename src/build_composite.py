@@ -23,9 +23,8 @@ WHY THE BASE-YEAR STAGE MATTERS
     `GDP_growth_source` tag for provenance.
 
 NOTE ON FILE PATHS
-    Filenames are matched with glob patterns, so this works whether your GDP files
-    are named ...05.06.2026.xlsx or ...05_06_2026.xlsx, etc. If a file moves, only
-    the glob pattern needs touching.
+    The old-base GDP statement is matched with a glob pattern (…28.11.2025…xlsx). The
+    new-base series is the CSV written by src/fetch_mospi.py from MoSPI's JSON API.
 """
 
 from pathlib import Path
@@ -52,10 +51,17 @@ RAW     = DATA / "raw"
 OUT     = DATA / "processed"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# 1) SPINE
-spine_labels = [f"{y}-{str(y+1)[-2:]} Q{q}" for y in range(2011, 2026) for q in range(1, 5)]
-spine_labels += ["2026-27 Q1", "2026-27 Q2"]   # forecast horizon (no data yet; target stays NaN)
-spine = pd.DataFrame({"FY_Quarter": spine_labels})
+# 1) SPINE: 2011-12 Q1 .. two quarters past the latest official GDP quarter (= forecast horizon)
+API_CSV = RAW / "gdp" / "mospi_quarterly_constant_2022-23.csv"     # written by src/fetch_mospi.py
+_last_k = pd.read_csv(API_CSV)["FY_Quarter"].map(order_key).max()
+
+
+def _label(k):
+    fy, q = divmod(k - 1, 4)
+    return f"{fy}-{str(fy + 1)[-2:]} Q{q + 1}"
+
+
+spine = pd.DataFrame({"FY_Quarter": [_label(k) for k in range(order_key("2011-12 Q1"), _last_k + 3)]})
 
 # 2a) FILES ALREADY QUARTERLY (interim/) -- select the columns we want
 gdp_old = pd.read_csv(INTERIM / "gdp_growth_contributions_quarterly.csv")[
@@ -134,20 +140,21 @@ gdp_lvl_old = pd.DataFrame(
      "GDP_level_old": [pd.to_numeric(old_x.iloc[18, c], errors="coerce") for c in old_map]}
 )
 
-# --- NEW 2022-23 base: GDP level row 17; we COMPUTE growth ourselves (base-consistent)
-new_x = pd.read_excel(find_one(RAW / "gdp", "*05.06.2026*.xlsx*"), sheet_name=0, header=None)
-new_map = _statement_colmap(new_x, year_row=1, q_row=3)
-gdp_new = pd.DataFrame(
-    {"FY_Quarter": list(new_map.values()),
-     "GDP_level_new": [pd.to_numeric(new_x.iloc[17, c], errors="coerce") for c in new_map]}
-).sort_values("FY_Quarter", key=lambda s: s.map(order_key))
+# --- NEW 2022-23 base: official quarterly series from the MoSPI eSankhyiki API (incl. all
+#     back-revisions), fetched by src/fetch_mospi.py. Growth is computed here (base-consistent).
+api = pd.read_csv(API_CSV).sort_values("FY_Quarter", key=lambda s: s.map(order_key)).reset_index(drop=True)
+gdp_new = api[["FY_Quarter", "GDP"]].rename(columns={"GDP": "GDP_level_new"})
 gdp_new["GDP_growth_new"] = gdp_new["GDP_level_new"].pct_change(4, fill_method=None) * 100
+# new-base expenditure levels (suffix _new): used to extend the YoY / ratio features past the
+# discontinued old-base series, with the same old-first / new-after rule as the GDP target.
+exp_new = api[["FY_Quarter", "PFCE", "GFCE", "GFCF", "Exports", "Imports"]].rename(
+    columns=lambda c: c if c == "FY_Quarter" else c + "_new")
 
 
 # 3) JOIN -- attach each piece to the spine
 panel = spine.copy()
 for piece in [gdp_old, exp, fisc, repo, cpi_q, iip_q, fx_q, cr_q, m3_q,
-              gdp_lvl_old, gdp_new]:
+              gdp_lvl_old, gdp_new, exp_new]:
     panel = panel.merge(piece, on="FY_Quarter", how="left", validate="one_to_one")
 
 panel["_k"] = panel["FY_Quarter"].map(order_key)
@@ -173,6 +180,21 @@ panel["RealM3_YoY"]    = panel["M3_level_YoY"] - panel["CPI_Inflation"]    # rea
 panel["GDP_proxy_old"]  = panel[["PFCE", "GFCE", "GFCF", "NetExports"]].sum(axis=1, min_count=4)
 panel["InvestmentRate"] = panel["GFCF"] / panel["GDP_proxy_old"] * 100      # GFCF / GDP
 panel["TradeOpenness"]  = (panel["Exports"] + panel["Imports"]) / panel["GDP_proxy_old"] * 100
+
+# --- extend the expenditure features past the discontinued old base ------------------
+# Old-base value where it exists, new-base value after (same splice rule as GDP_growth).
+proxy_new = (panel[["PFCE_new", "GFCE_new", "GFCF_new"]].sum(axis=1, min_count=3)
+             + panel["Exports_new"] - panel["Imports_new"])
+extend = {
+    "GFCF_YoY":       panel["GFCF_new"].pct_change(4, fill_method=None) * 100,
+    "Exports_YoY":    panel["Exports_new"].pct_change(4, fill_method=None) * 100,
+    "Imports_YoY":    panel["Imports_new"].pct_change(4, fill_method=None) * 100,
+    "InvestmentRate": panel["GFCF_new"] / proxy_new * 100,
+    "TradeOpenness":  (panel["Exports_new"] + panel["Imports_new"]) / proxy_new * 100,
+}
+for col, new_vals in extend.items():
+    fill = panel[col].isna() & new_vals.notna()
+    panel.loc[fill, col] = new_vals[fill]
 
 # --- calendar / regime features -------------------------------------------
 panel["Quarter"] = panel["FY_Quarter"].str[-1].astype(int)

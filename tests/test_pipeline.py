@@ -48,9 +48,13 @@ def test_pct_change_does_not_forward_fill():
 
 def test_master_has_no_yoy_where_level_missing():
     df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv")
-    assert len(df) == 62 and not df["FY_Quarter"].duplicated().any()
+    ks = df["FY_Quarter"].map(order_key)
+    assert ks.iloc[0] == order_key("2011-12 Q1") and (ks.diff().dropna() == 1).all()   # contiguous spine
     for lvl, yoy in LEVEL_TO_YOY:
-        assert df.loc[df[lvl].isna(), yoy].isna().all(), f"{yoy} has values where {lvl} is NaN"
+        no_level = df[lvl].isna()
+        if lvl + "_new" in df.columns:                      # expenditure YoY may come from the new base
+            no_level &= df[lvl + "_new"].isna()
+        assert df.loc[no_level, yoy].isna().all(), f"{yoy} has values where {lvl} is NaN"
 
 
 def test_master_contains_bank_credit_and_no_constant_label():
@@ -74,3 +78,25 @@ def test_fred_csv_to_raw_format():
     assert list(out.columns) == ["observation_date", "MCOILBRENTEU"]
     assert out["observation_date"].tolist() == ["01-05-1987", "01-08-2026"]   # DD-MM-YYYY, "." rows dropped
     assert out["MCOILBRENTEU"].tolist() == [18.58, 91.08]
+
+
+def test_mospi_rows_to_wide():
+    from fetch_mospi import tidy_to_wide
+    rows = {
+        "GDP":  [{"year": "2026-27", "quarter": "Q1", "constant_price": "8136153"},
+                 {"year": "2025-26", "quarter": "Q4", "constant_price": "8880334"}],
+        "GFCF": [{"year": "2026-27", "quarter": "Q1", "constant_price": "2795605"}],
+    }
+    out = tidy_to_wide(rows)
+    assert out["FY_Quarter"].tolist() == ["2025-26 Q4", "2026-27 Q1"]        # chronological
+    assert out.loc[1, "GDP"] == 8136153.0 and out.loc[1, "GFCF"] == 2795605.0
+    assert pd.isna(out.loc[0, "GFCF"])
+
+
+def test_master_new_base_comes_from_mospi_api_file():
+    api = pd.read_csv(ROOT / "data" / "raw" / "gdp" / "mospi_quarterly_constant_2022-23.csv")
+    df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv")
+    last = api.iloc[-1]
+    row = df.loc[df["FY_Quarter"] == last["FY_Quarter"]].iloc[0]
+    assert row["GDP_level_new"] == last["GDP"]
+    assert row["GDP_growth_source"] == "2022-23 base (spliced)"

@@ -18,6 +18,11 @@ Brent_USD,feature,model feature,0
 M3_level,dropped,collinear with M3_level_YoY,0
 GDP_level_old,dropped,"level, base-specific scale; use GDP_growth_old instead",2
 GDP_level_new,dropped,"level, base-specific scale; use GDP_growth_new instead",44
+PFCE_new,dropped,new-base level (MoSPI API); extends ratio features only,44
+GFCE_new,dropped,new-base level (MoSPI API); extends ratio features only,44
+GFCF_new,dropped,new-base level (MoSPI API); extends GFCF_YoY / InvestmentRate past the old base,44
+Exports_new,dropped,new-base level (MoSPI API); extends Exports_YoY / TradeOpenness past the old base,44
+Imports_new,dropped,new-base level (MoSPI API); extends Imports_YoY / TradeOpenness past the old base,44
 GDP_growth_new,dropped,"alternate target (base sensitivity), not a predictor",48
 has_new_base,dropped,provenance flag,0
 GFCF_YoY,feature,model feature,4

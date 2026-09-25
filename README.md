@@ -6,7 +6,8 @@ by sector — handling the February 2026 rebasing of the National Accounts from 
 2011-12 to 2022-23.
 
 ## What the project does
-1. Collects 12+ public macro indicators and combines them into one quarterly master table.
+1. Collects 12+ public macro indicators (the new-base GDP series straight from MoSPI's JSON API,
+   Brent from FRED, the rest from committed RBI/MoSPI files) into one quarterly master table.
 2. Engineers features, prunes redundant ones (correlation + VIF), and tests stationarity.
 3. Compares forecasting models under time-aware validation and identifies the top growth drivers.
 4. Forecasts GDP growth for FY2026-27 Q1 and Q2 (SARIMAX with a deterministic COVID dummy).
@@ -76,7 +77,7 @@ gdp-analysis/
   tests/test_pipeline.py          # data invariants (no YoY where level is NaN), path resolver, FRED parser
   data/
     raw/
-      gdp/       # MoSPI GDP statements (both 2011-12 and 2022-23 base)
+      gdp/       # MoSPI: old-base statement xlsx (2011-12) + mospi_quarterly_constant_2022-23.csv <- src/fetch_mospi.py
       cpi/       # RBI CPI monthly data
       iip/       # MoSPI IIP monthly data
       fx/        # RBI monthly average exchange rates
@@ -100,7 +101,8 @@ gdp-analysis/
       feature_manifest.csv               <- per-column role labels (feature/dropped/target)
   src/
     utils.py            # shared helpers (fiscal-quarter logic, file finding, project-root resolver)
-    fetch_brent.py      # downloads Brent from FRED into data/raw/crude/ (the only automated source)
+    fetch_brent.py      # downloads Brent from FRED into data/raw/crude/
+    fetch_mospi.py      # downloads the 2022-23-base quarterly GDP + expenditure series from MoSPI's API
     collapse_monthly.py # monthly/fortnightly -> quarterly collapse functions
     make_repo_rate.py   # raw repo changelog -> monthly + quarterly repo files
     build_composite.py  # assembles the master table from all sources
@@ -115,7 +117,7 @@ gdp-analysis/
     05_gva_sectors.ipynb    # production-side GVA sectoral breakdown
   outputs/
     figures/       # all charts (PNG): 01a-d_* (EDA), 02a-e_*, 03b-e_*, 04a/b_*, 05a-c_*
-    forecasts/     # gdp_forecast_FY2026_27.csv
+    forecasts/     # gdp_forecast_next2q.csv (SARIMAX) + gdp_scenarios_next2q.csv (notebook 04)
     models/        # saved SARIMAX (.pkl) + best ML model (.joblib)
   docs/
     data_dictionary.md   # per-column documentation for composite_master_quarterly.csv
@@ -125,30 +127,34 @@ gdp-analysis/
 
 ## Key results
 
-- **Best accuracy:** on the 8-quarter holdout the random-walk baseline (RMSE 0.97) is not
-  beaten; Ridge is within 0.06. Under 5-fold expanding-window CV every model is far worse in
-  absolute terms (Ridge ≈ 3.3) but Ridge does beat the same-fold naive baseline (≈ 4.4). The
-  models' value is interpretability plus a modest, fold-robust edge, not a large accuracy gain.
+- **Best accuracy:** on the 8-quarter holdout the random-walk baseline (RMSE 0.96) is not
+  beaten; Ridge is within 0.07. Under 5-fold expanding-window CV every model is far worse in
+  absolute terms (Ridge / ElasticNet ≈ 3.3) but both beat the same-fold naive baseline (≈ 4.3).
+  The models' value is interpretability plus a modest, fold-robust edge, not a large accuracy gain.
 - **Top predictors of growth:** industrial production (IIP) by a consensus of Lasso,
   permutation importance and SHAP; among external drivers it is followed by the fiscal
   deficit and rupee crude. GFCF ranks high too but is a component of GDP, so it is reported
   separately from the external drivers.
 - **Granger-causality screen:** IIP growth is both coincident (r ≈ 0.93) and leading
-  (p ≈ 0.005). CPI inflation and Brent are the other Granger-significant series (p < 0.05
+  (p ≈ 0.004). CPI inflation and Brent are the other Granger-significant series (p < 0.05
   at lag 2). GFCF_YoY is strongly coincident (r ≈ 0.85) but does **not** lead growth
   (p ≈ 0.41): it moves with GDP rather than ahead of it.
 - **Largest accounting contributor:** private consumption (~3.6 pp average), then investment.
-- **Forecast (SARIMAX + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).
-  **Out-of-sample check:** MoSPI's Q1 FY2026-27 estimate (released 31 Aug 2026) is **7.8%**, 0.7 pp above
-  the point forecast and inside the 80% interval (2.4-11.8). Q2 is due end-November 2026.
+- **Forecast (SARIMAX + COVID dummy), data through Q1 FY2026-27:** FY2026-27 Q2 ~ 6.9%
+  (80% interval 2.2-11.5), Q3 ~ 6.0% (-1.4-13.4). Written to `outputs/forecasts/gdp_forecast_next2q.csv`.
+  **Track record:** the previous vintage (data through Q4 FY26) forecast Q1 FY27 at 7.1%; MoSPI's
+  official print (31 Aug 2026) was **7.8%**, 0.7 pp off and inside that vintage's 80% interval.
+  Q2 FY27 is due 30 November 2026.
 - **Production-side structure:** Services dominate GVA (~55% share); Industry and Agriculture
   are more volatile. Sectoral contributions are visualised in notebook 05.
-- **Base-year sensitivity:** the driver ranking appears to shift across the 2011-12 vs
-  2022-23 base (rank-correlation ~ -0.27), but this rests on only ~10 overlap quarters,
-  so it's directional at best — reported as a caveat, not a precise estimate.
+- **Base-year sensitivity:** the driver ranking is not stable across the 2011-12 vs 2022-23
+  base (rank-correlation ≈ 0.08 after MoSPI's Aug-2026 back-revision; it was -0.27 on the
+  previous vintage). It rests on only 10 overlap quarters, so it's directional at best —
+  reported as a caveat, not a precise estimate.
 
 ## Data sources
 
-MoSPI (GDP, IIP, GVA), RBI (repo rate, CPI, M3, INR/USD reference rates, WSS bank credit),
-CGA / Union Budget (fiscal deficit), and FRED (Brent crude). See `docs/data_dictionary.md`
+MoSPI (GDP via the eSankhyiki JSON API for the 2022-23 base and the archived 2011-12-base statement,
+IIP, GVA), RBI (repo rate, CPI, M3, INR/USD reference rates, WSS bank credit), CGA / Union Budget
+(fiscal deficit), and FRED (Brent crude). See `docs/data_dictionary.md`
 for per-variable detail and `docs/decisions.md` for methodology choices.

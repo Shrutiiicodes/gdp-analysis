@@ -20,6 +20,13 @@ and revisited. Newest decisions at the bottom of each section.
 ## Base-year revision (the central issue)
 - **Two GDP vintages are carried, not one.** Old 2011-12 base (`*_old`) and new 2022-23 base
   (`*_new`), because MoSPI rebased on 27-Feb-2026.
+- **New base comes from MoSPI's JSON API, not a press-release spreadsheet.** `src/fetch_mospi.py`
+  pulls the 2022-23-base quarterly GDP and expenditure levels (with every back-revision) from
+  eSankhyiki; the spine's forecast horizon is derived from the latest quarter in that file, so
+  each MoSPI release moves the forecast forward without editing code.
+- **Expenditure features are spliced like the target.** `GFCF_YoY`, `Exports_YoY`, `Imports_YoY`,
+  `InvestmentRate` and `TradeOpenness` use the old base where it exists and new-base levels after
+  2025-26 Q2, so the regression features keep pace with the GDP target.
 - **Splicing.** The old quarterly series was discontinued after 2025-26 Q2, so the primary
   target `GDP_growth` uses old-base growth through Q2 and new-base growth for Q3/Q4. Growth
   rates are spliced (not levels), since growth is far more base-comparable than the absolute
@@ -111,9 +118,11 @@ and revisited. Newest decisions at the bottom of each section.
 ## Known limitations
 - Spliced target has a small discontinuity at the 2025-26 Q2/Q3 base join.
 - `GDP_proxy_old` (ratios' denominator) omits CIS/Valuables/Discrepancies — documented proxy.
-- Base-sensitivity uses only 10 overlap quarters → directional.
-- GVA sectoral contributions use the **2022-23 base** DBIE export; the old-base breakdown is
-  not separately tracked (consistent with the GVA series available on DBIE at time of writing).
+- Base-sensitivity uses only 10 overlap quarters → directional (rank-corr moved from -0.27 to 0.08
+  when MoSPI back-revised the new series in Aug 2026, which is itself evidence of how fragile it is).
+- GVA sectoral contributions use the **2011-12 base** DBIE export (2011-12 Q1 → 2025-26 Q2); the
+  new-base GVA by industry is available from the same MoSPI API from 2022-23 only, so the sectoral
+  view stays on the long old-base series until MoSPI publishes the full back-series.
 - Re-estimate once MoSPI releases the full 2022-23 back-series (expected Dec 2026).
 - GitHub disables scheduled workflows on public repos after 60 days without repository activity; if the
   monthly job stops, re-enable it from the Actions tab (any push also re-enables it).

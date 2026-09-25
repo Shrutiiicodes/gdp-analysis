@@ -4,7 +4,7 @@ make_repo_rate.py
 Turns the RAW repo-rate changelog (event-based: a row each time RBI changed the
 rate) into the two interim files the composite needs:
     data/interim/repo_rate_monthly_2011_2026.csv   (month-end + day-weighted month avg)
-    data/interim/repo_rate_quarterly_FY.csv        (quarter avg + quarter-end)
+    data/interim/repo_rate_quarterly_FY.csv        (quarter avg + quarter-end, complete quarters only)
 
 Run from the project root:
     python src/make_repo_rate.py
@@ -35,9 +35,9 @@ def build():
     log["EffectiveDate"] = pd.to_datetime(log["EffectiveDate"], format="%d-%m-%Y", errors="coerce")
     log = log.dropna().sort_values("EffectiveDate").reset_index(drop=True)
 
-    # 2) expand to a DAILY step series from first change to end-2025-26 (Mar 2026)
+    # 2) expand to a DAILY step series from first change to the last COMPLETE month
     start = log["EffectiveDate"].iloc[0]
-    end = pd.Timestamp("2026-03-31")
+    end = pd.Timestamp.today().normalize() - pd.offsets.MonthEnd(1)
     days = pd.DataFrame({"date": pd.date_range(start, end, freq="D")})
     days = days.merge(log.rename(columns={"EffectiveDate": "date"}), on="date", how="left")
     days["Repo_Rate_pct"] = days["Repo_Rate_pct"].ffill()   # carry each rate until the next change
@@ -59,6 +59,8 @@ def build():
     quarterly = monthly.groupby("FY_Quarter", as_index=False).agg(
         Repo_QtrAvg=("Repo_MonthAvg", "mean"),
         Repo_QtrEnd=("Repo_MonthEnd", "last"))
+    full = monthly.groupby("FY_Quarter").size() == 3          # drop a partial current quarter
+    quarterly = quarterly[quarterly["FY_Quarter"].map(full)]
     quarterly = quarterly.sort_values("FY_Quarter", key=lambda s: s.map(order_key))
     quarterly.to_csv(INTERIM / "repo_rate_quarterly_FY.csv", index=False)
 
