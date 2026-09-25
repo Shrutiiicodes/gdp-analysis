@@ -16,6 +16,21 @@ by sector — handling the February 2026 rebasing of the National Accounts from 
 
 ## How to run (from the project root)
 
+**One command** (rebuilds interim files, the master table, the GVA view, executes notebooks 01-05,
+runs the tests; stops at the first failure):
+
+```bash
+python run_all.py
+```
+
+Add `--fetch` to refresh Brent from FRED first. That is the only source with a stable
+machine-readable endpoint; every other raw file under `data/raw/` is a manual download from
+MoSPI / RBI (see `docs/data_provenance.md`), so a data refresh is: drop the new files in, then
+`python run_all.py`. GitHub Actions (`.github/workflows/pipeline.yml`) runs the same command on
+every push and, on the 1st of each month, with `--fetch`, committing regenerated outputs.
+
+The individual steps, if you need just one:
+
 ```bash
 # 1. Regenerate the repo-rate interim files from the raw changelog
 python src/make_repo_rate.py

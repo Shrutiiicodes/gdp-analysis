@@ -65,3 +65,12 @@ def test_add_credit_missing_file_is_noop(tmp_path):
     master = pd.DataFrame({"FY_Quarter": ["2011-12 Q1"]})
     out = add_credit(master, tmp_path)
     assert list(out.columns) == ["FY_Quarter"]
+
+
+def test_fred_csv_to_raw_format():
+    from fetch_brent import to_raw_format
+    fred = "observation_date,MCOILBRENTEU\n1987-05-01,18.58\n2026-06-01,.\n2026-08-01,91.08\n"
+    out = to_raw_format(fred)
+    assert list(out.columns) == ["observation_date", "MCOILBRENTEU"]
+    assert out["observation_date"].tolist() == ["01-05-1987", "01-08-2026"]   # DD-MM-YYYY, "." rows dropped
+    assert out["MCOILBRENTEU"].tolist() == [18.58, 91.08]
