@@ -41,6 +41,14 @@ corresponding raw files are present.
 ## Reproducibility notes
 
 - `make_repo_rate.py` and `gva_sectors.py` are fully script-generated from their raw inputs.
+- **Brent is the only raw file fetched automatically**: `src/fetch_brent.py` downloads FRED series
+  `MCOILBRENTEU` (https://fred.stlouisfed.org/graph/fredgraph.csv?id=MCOILBRENTEU) and writes it in the
+  repo's DD-MM-YYYY layout. `python run_all.py --fetch` runs it before the build; the monthly GitHub
+  Actions job does the same and commits the result.
+- **Every other raw file is a manual download.** MoSPI (GDP statements, IIP, GVA) and RBI (CPI, M3, FX,
+  bank credit) publish Excel files whose URLs change per release and have no stable public API, so a data
+  refresh is: download the new file, drop it into the matching `data/raw/<source>/` folder with the same
+  name pattern the glob expects (see `build_composite.py`), then `python run_all.py`.
 - The five **curated inputs** listed above are committed as-is; `build_composite.py` consumes them directly.
 - The two **optional** credit/GST files are never committed to the repo; they extend the master CSV in-place when present.
 - The two raw GDP statement xlsx files (`*28.11.2025*.xlsx`, `*05.06.2026*.xlsx`) are read directly by `build_composite.py` using glob patterns, so small filename differences (dots vs underscores) are tolerated.

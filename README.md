@@ -71,13 +71,16 @@ Requirements: see `requirements.txt`. Install with `pip install -r requirements.
 
 ```
 gdp-analysis/
+  run_all.py            # one command: interim -> master table -> GVA -> notebooks 01-05 -> tests
+  .github/workflows/pipeline.yml  # CI: runs run_all.py on push; monthly with --fetch, commits outputs
+  tests/test_pipeline.py          # data invariants (no YoY where level is NaN), path resolver, FRED parser
   data/
     raw/
       gdp/       # MoSPI GDP statements (both 2011-12 and 2022-23 base)
       cpi/       # RBI CPI monthly data
       iip/       # MoSPI IIP monthly data
       fx/        # RBI monthly average exchange rates
-      crude/     # FRED Brent crude prices (MCOILBRENTEU.csv)
+      crude/     # FRED Brent crude prices (MCOILBRENTEU.csv) <- refreshed by src/fetch_brent.py
       m3/        # RBI broad money supply (M3)
       repo/      # RBI repo rate changelog
       gva/       # RBI DBIE GVA by economic activity (for notebook 05)
@@ -96,7 +99,8 @@ gdp-analysis/
       composite_master_quarterly.xlsx     <- same, Excel format
       feature_manifest.csv               <- per-column role labels (feature/dropped/target)
   src/
-    utils.py            # shared helpers (fiscal-quarter logic, file finding)
+    utils.py            # shared helpers (fiscal-quarter logic, file finding, project-root resolver)
+    fetch_brent.py      # downloads Brent from FRED into data/raw/crude/ (the only automated source)
     collapse_monthly.py # monthly/fortnightly -> quarterly collapse functions
     make_repo_rate.py   # raw repo changelog -> monthly + quarterly repo files
     build_composite.py  # assembles the master table from all sources

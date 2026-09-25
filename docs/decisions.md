@@ -93,6 +93,21 @@ and revisited. Newest decisions at the bottom of each section.
   co-determined with, GDP growth) and the raw data source is optional (requires a separate DBIE
   download).
 
+## Automation (`run_all.py`, `.github/workflows/pipeline.yml`)
+- **One entry point.** `run_all.py` runs interim builders, the master table, the GVA view, the five
+  notebooks headlessly (`nbconvert --execute --inplace`) and the tests, stopping at the first failure.
+  Notebook outputs, figures, forecasts and models are regenerated from scratch, so committed outputs are
+  always the product of the committed code and data.
+- **CI on every push** runs `run_all.py` on a clean Ubuntu runner with the pinned `requirements.txt`. A
+  notebook that cannot Run All, or a dependency drift that changes results, fails the build. This is the
+  guard against the two failures found in the 2026-09 audit (a deleted SHAP cell; pandas 2→3 changing
+  `pct_change` and silently fabricating YoY values).
+- **Monthly scheduled run with `--fetch`** refreshes Brent from FRED and commits regenerated outputs as
+  `github-actions[bot]`. Only Brent is automated because it is the only source with a stable endpoint;
+  MoSPI/RBI releases are quarterly manual drops into `data/raw/`.
+- **Not automated on purpose:** scraping MoSPI/RBI portals. Their URLs change every release; a scraper
+  would break more often than the quarterly manual step it replaces.
+
 ## Known limitations
 - Spliced target has a small discontinuity at the 2025-26 Q2/Q3 base join.
 - `GDP_proxy_old` (ratios' denominator) omits CIS/Valuables/Discrepancies — documented proxy.
@@ -100,3 +115,5 @@ and revisited. Newest decisions at the bottom of each section.
 - GVA sectoral contributions use the **2022-23 base** DBIE export; the old-base breakdown is
   not separately tracked (consistent with the GVA series available on DBIE at time of writing).
 - Re-estimate once MoSPI releases the full 2022-23 back-series (expected Dec 2026).
+- GitHub disables scheduled workflows on public repos after 60 days without repository activity; if the
+  monthly job stops, re-enable it from the Actions tab (any push also re-enables it).
