@@ -116,7 +116,7 @@ gdp-analysis/
   separately from the external drivers.
 - **Granger-causality screen:** IIP growth is both coincident (r ≈ 0.93) and leading
   (p ≈ 0.005). CPI inflation and Brent are the other Granger-significant series (p < 0.05
-  at lag 2). GFCF_YoY is strongly coincident (r ≈ 0.83) but does **not** lead growth
+  at lag 2). GFCF_YoY is strongly coincident (r ≈ 0.85) but does **not** lead growth
   (p ≈ 0.41): it moves with GDP rather than ahead of it.
 - **Largest accounting contributor:** private consumption (~3.6 pp average), then investment.
 - **Forecast (SARIMAX + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).

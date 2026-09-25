@@ -40,6 +40,12 @@ LEVEL_TO_YOY = [("GFCF", "GFCF_YoY"), ("Exports", "Exports_YoY"), ("Imports", "I
                 ("CrudeINR", "CrudeINR_YoY")]
 
 
+def test_pct_change_does_not_forward_fill():
+    # pandas < 3 padded NaN before differencing; the build relies on fill_method=None being honoured
+    s = pd.Series([1.0, 2.0, 3.0, 4.0, float("nan")])
+    assert s.pct_change(4, fill_method=None).isna().iloc[-1]
+
+
 def test_master_has_no_yoy_where_level_missing():
     df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv")
     assert len(df) == 62 and not df["FY_Quarter"].duplicated().any()

@@ -4,7 +4,7 @@ Builds ONE quarterly master table from all the separate data files and writes it
 to data/processed/composite_master_quarterly.{csv,xlsx}.
 
 Pipeline:
-    1) SPINE      - empty skeleton: every quarter 2011-12 Q1 .. 2025-26 Q4
+    1) SPINE      - empty skeleton: every quarter 2011-12 Q1 .. 2026-27 Q2 (last two = forecast horizon)
     2) COLLAPSE   - squash monthly/fortnightly files to ONE number per quarter
     3) JOIN       - glue each file's column onto the spine on FY_Quarter
     4) BASE-YEAR  - attach BOTH GDP vintages (old 2011-12 base + new 2022-23 base)
@@ -20,7 +20,7 @@ WHY THE BASE-YEAR STAGE MATTERS
                                             tail AND drives the base-sensitivity story
     These are spliced into ONE continuous column, `GDP_growth`, which is the actual
     modelling / forecasting target downstream. Every row also carries a
-    `base_year_target` label and a `GDP_growth_source` tag for provenance.
+    `GDP_growth_source` tag for provenance.
 
 NOTE ON FILE PATHS
     Filenames are matched with glob patterns, so this works whether your GDP files

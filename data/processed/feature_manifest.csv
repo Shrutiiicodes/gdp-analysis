@@ -41,3 +41,4 @@ COVID,exog,SARIMAX exogenous dummy (forecast); not in ML feature matrix,0
 GDP_growth_lag1,feature,model feature (AR lag on spliced target),6
 GDP_growth_lag4,feature,model feature (seasonal AR lag on spliced target),8
 BaseRevision_gap,dropped,target-derived; for the base-year story only,50
+BankCredit_YoY,candidate,optional banking proxy (added when raw credit file exists); screened in nb03 not in ML FEATURES,1

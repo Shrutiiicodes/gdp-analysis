@@ -45,12 +45,12 @@ except ImportError:
     from .utils import find_project
 
 
-# Default feature set = the notebook-02 model features. Add "BankCredit_YoY",
-# "GST_YoY" here once those series are merged into the composite master.
+# Default feature set = the notebook-02 model features plus the optional banking
+# proxies (run() silently skips any that are absent from the master table).
 DEFAULT_FEATURES = [
     "IIP_growth", "GFCF_YoY", "Imports_YoY", "Exports_YoY", "InvestmentRate",
     "FiscalDeficit_pct_GDP", "CrudeINR_YoY", "Brent_USD", "TradeOpenness",
-    "Repo_QtrAvg", "M3_level_YoY", "CPI_Inflation",
+    "Repo_QtrAvg", "M3_level_YoY", "CPI_Inflation", "BankCredit_YoY", "GST_YoY",
 ]
 
 MAXLAG = 4
