@@ -11,7 +11,7 @@ where each one comes from so the pipeline is auditable.
 | `repo_rate_monthly_2011_2026.csv`, `repo_rate_quarterly_FY.csv` | `raw/repo/repo_rate_changelog.csv` | `src/make_repo_rate.py` | script-generated |
 | `expenditure_components_quarterly_oldbase.csv` | `raw/gdp/Statement_Quarterly_Constant_28.11.2025.xlsx` (expenditure block, 2011-12 base) | curated once (manual clean) | curated input |
 | `gdp_growth_contributions_quarterly.csv`, `gdp_growth_contributions_annual_FY.csv` | same old-base GDP statement (contributions-to-growth block) | curated once | curated input |
-| `CPI_Combined_2012base_monthly_clean.csv` | `raw/cpi/RBIB Table No. 19 ... (Base 2010=100).xlsx` | curated once | curated input. NB: RBI table is *titled* "Base 2010=100" but the series is the official CPI-Combined **2012=100** (index ≈100 across 2012). Only the base-invariant YoY rate is used, so base choice doesn't affect results. |
+| `CPI_Combined_2012base_monthly_clean.csv` | `raw/cpi/RBIB Table No. 19 ... (Base 2010=100).xlsx` | curated once | curated input. NB: RBI table is *titled* "Base 2010=100" but the series is the official CPI-Combined **2012=100** (index ≈100 across 2012). Only the base-invariant YoY rate is used, so base choice doesn't affect results. Jan–Mar 2026 inflation is the provisional 2024=100-base print (index not on the 2012 base); YoY is base-invariant so it is used as is. |
 | `fiscal_deficit_pct_gdp_quarterly.csv` | CGA monthly accounts / Union Budget (**no raw file in this repo**) | curated once, external | curated input |
 
 ## GVA sectoral interim file (required for notebook 05 / `gva_sectors.py`)
@@ -26,15 +26,15 @@ where each one comes from so the pipeline is auditable.
 3. Export as Excel and save to `data/raw/gva/gva_by_activity_quarterly.xlsx`.
 4. Run `python src/gva_sectors.py`.
 
-## Optional interim files (appended by `add_bank_credit.py`)
+## Optional columns (appended by `build_composite.py` via `add_bank_credit.py`)
 
 These files are **not** required for the main pipeline. They are added on request if the
 corresponding raw files are present.
 
 | Optional raw file | Description | Produced by |
 |---|---|---|
-| `raw/credit/bank_credit_outstanding.csv` | Scheduled commercial bank credit, quarter-end stock. Either provide a clean CSV with `Date` and `BankCredit` columns, or drop the raw RBI WSS Table-4 xlsx (`WSS_Table*.xlsx`) in the same folder — the script will parse and cache it automatically. | `src/add_bank_credit.py` |
-| `raw/gst/gst_collections_monthly.csv` | Monthly GST collections. Clean CSV with `Date` and `GST` columns. | `src/add_bank_credit.py` |
+| `raw/credit/bank_credit_outstanding.csv` | Scheduled commercial bank credit, quarter-end stock. Either provide a clean CSV with `Date` and `BankCredit` columns, or drop the raw RBI WSS Table-4 xlsx (`WSS_Table*.xlsx`) in the same folder — the script will parse and cache it automatically. | `src/build_composite.py` via `add_bank_credit.add_credit` |
+| `raw/gst/gst_collections_monthly.csv` | Monthly GST collections. Clean CSV with `Date` and `GST` columns. | `src/build_composite.py` via `add_bank_credit.add_gst` |
 
 ---
 

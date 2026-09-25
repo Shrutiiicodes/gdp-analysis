@@ -39,6 +39,11 @@ python src/gva_sectors.py
 #    notebooks/03_contributions.ipynb -> demand-side decomposition
 #    notebooks/04_scenarios.ipynb     -> scenario analysis
 #    notebooks/05_gva_sectors.ipynb   -> production-side GVA sectoral breakdown
+
+# Regression checks (data invariants + path resolver)
+python -m pytest tests -v
+# Or execute every notebook headlessly, in order
+jupyter nbconvert --to notebook --execute --inplace notebooks/0*.ipynb
 ```
 
 The notebooks auto-detect the project root (they walk up from the notebook's folder), so
@@ -101,13 +106,18 @@ gdp-analysis/
 
 ## Key results
 
-- **Best accuracy:** a random-walk baseline (RMSE 0.97); regularized linear models match it
-  to within ~0.1 RMSE, so the models' value is interpretability, not a large accuracy gain.
-- **Top predictors of growth:** industrial production (IIP) and fixed investment (GFCF), by a
-  consensus of Lasso, permutation importance and SHAP.
-- **Granger-causality screen:** IIP and GFCF_YoY are also the strongest Granger-significant
-  leading indicators (p < 0.05 over lags 1–4), reinforcing the driver story with predictive
-  precedence — not just contemporaneous correlation.
+- **Best accuracy:** on the 8-quarter holdout the random-walk baseline (RMSE 0.97) is not
+  beaten; Ridge is within 0.06. Under 5-fold expanding-window CV every model is far worse in
+  absolute terms (Ridge ≈ 3.3) but Ridge does beat the same-fold naive baseline (≈ 4.4). The
+  models' value is interpretability plus a modest, fold-robust edge, not a large accuracy gain.
+- **Top predictors of growth:** industrial production (IIP) by a consensus of Lasso,
+  permutation importance and SHAP; among external drivers it is followed by the fiscal
+  deficit and rupee crude. GFCF ranks high too but is a component of GDP, so it is reported
+  separately from the external drivers.
+- **Granger-causality screen:** IIP growth is both coincident (r ≈ 0.93) and leading
+  (p ≈ 0.005). CPI inflation and Brent are the other Granger-significant series (p < 0.05
+  at lag 2). GFCF_YoY is strongly coincident (r ≈ 0.83) but does **not** lead growth
+  (p ≈ 0.41): it moves with GDP rather than ahead of it.
 - **Largest accounting contributor:** private consumption (~3.6 pp average), then investment.
 - **Forecast (SARIMAX + COVID dummy):** FY2026-27 Q1 ~ 7.1%, Q2 ~ 6.1% (80% interval).
 - **Production-side structure:** Services dominate GVA (~55% share); Industry and Agriculture

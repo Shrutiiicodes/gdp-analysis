@@ -10,6 +10,10 @@ and revisited. Newest decisions at the bottom of each section.
 - **Collapse rules by series type.** Flows/rates (repo, CPI, IIP, FX, Brent) → quarterly
   *mean*; M3 is a *stock* → quarter-*end* value. A single FY-book-closure M3 outlier
   (2026-03-31, ~2× neighbours) is dropped as an artefact.
+- **YoY never forward-fills.** Every `pct_change(4)` passes `fill_method=None`. pandas < 3 padded
+  NaN levels before differencing, which fabricated YoY values for quarters with no level data
+  (caught 2026-09; the tail of the previously committed table was affected). `tests/test_pipeline.py`
+  pins the invariant.
 - **YoY/growth forms are the modelling features**, not levels — levels are base-specific and
   non-stationary (confirmed by ADF/KPSS in notebook 01).
 
@@ -57,9 +61,9 @@ and revisited. Newest decisions at the bottom of each section.
   mechanism. These caveats are documented in the driver_screen.py docstring.
 - **Non-stationary features are first-differenced** before the Granger test (ADF p > 0.10
   threshold), so the test is always run on a stationary input.
-- **Optional extension:** `add_bank_credit.py` appends `BankCredit_YoY` (and optionally
-  `GST_YoY`) to the master CSV, and then calls `driver_screen.run()` automatically so the
-  new proxies are screened alongside the core features.
+- **Optional extension:** `build_composite.py` calls `add_bank_credit.add_credit`/`add_gst`, so
+  `BankCredit_YoY` (and `GST_YoY` when its file exists) are part of the master table; notebook 03
+  screens them alongside the core features.
 
 ## Forecasting FY2026-27
 - **SARIMAX, not regression.** Future quarters have no *unknown* exogenous data (CPI/IIP/etc.
@@ -92,7 +96,7 @@ and revisited. Newest decisions at the bottom of each section.
 ## Known limitations
 - Spliced target has a small discontinuity at the 2025-26 Q2/Q3 base join.
 - `GDP_proxy_old` (ratios' denominator) omits CIS/Valuables/Discrepancies — documented proxy.
-- Base-sensitivity uses only ~10 overlap quarters → directional.
+- Base-sensitivity uses only 10 overlap quarters → directional.
 - GVA sectoral contributions use the **2022-23 base** DBIE export; the old-base breakdown is
   not separately tracked (consistent with the GVA series available on DBIE at time of writing).
 - Re-estimate once MoSPI releases the full 2022-23 back-series (expected Dec 2026).
