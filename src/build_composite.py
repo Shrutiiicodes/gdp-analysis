@@ -39,13 +39,13 @@ warnings.filterwarnings("ignore")
 # Shared helpers live in utils.py / collapse_monthly.py (run as `python src/build_composite.py`
 # so that src/ is on the import path).
 try:
-    from utils import MONTHS, fy_quarter, order_key, find_one
+    from utils import MONTHS, fy_quarter, order_key, find_one, find_project
     from collapse_monthly import collapse_mean, collapse_qtr_end, collapse_agg
 except ImportError:
-    from .utils import MONTHS, fy_quarter, order_key, find_one
+    from .utils import MONTHS, fy_quarter, order_key, find_one, find_project
     from .collapse_monthly import collapse_mean, collapse_qtr_end, collapse_agg
 
-DATA    = Path("data")
+DATA    = find_project() / "data"
 INTERIM = DATA / "interim"
 RAW     = DATA / "raw"
 OUT     = DATA / "processed"

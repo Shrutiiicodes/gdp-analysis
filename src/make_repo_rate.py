@@ -19,11 +19,11 @@ from pathlib import Path
 import pandas as pd
 
 try:
-    from utils import order_key, fy_quarter
+    from utils import order_key, fy_quarter, find_project
 except ImportError:
-    from .utils import order_key, fy_quarter
+    from .utils import order_key, fy_quarter, find_project
 
-DATA = Path("data")
+DATA = find_project() / "data"
 RAW = DATA / "raw" / "repo"
 INTERIM = DATA / "interim"
 INTERIM.mkdir(parents=True, exist_ok=True)
@@ -32,11 +32,6 @@ INTERIM.mkdir(parents=True, exist_ok=True)
 def build():
     # 1) read the changelog (EffectiveDate, Repo_Rate_pct)
     src = RAW / "repo_rate_changelog.csv"
-    if not src.exists():                       # tolerate alt location
-        hits = list(Path("data").rglob("repo_rate_changelog.csv"))
-        if not hits:
-            raise FileNotFoundError("repo_rate_changelog.csv not found under data/")
-        src = hits[0]
     log = pd.read_csv(src)
     log["EffectiveDate"] = pd.to_datetime(log["EffectiveDate"], format="%d-%m-%Y", errors="coerce")
     log = log.dropna().sort_values("EffectiveDate").reset_index(drop=True)

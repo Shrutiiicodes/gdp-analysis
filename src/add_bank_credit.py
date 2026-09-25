@@ -5,22 +5,11 @@ import numpy as np
 import pandas as pd
 
 try:
-    from utils import order_key
+    from utils import order_key, find_project
     from collapse_monthly import collapse_qtr_end, add_fy_quarter
 except ImportError:
-    from .utils import order_key
+    from .utils import order_key, find_project
     from .collapse_monthly import collapse_qtr_end, add_fy_quarter
-
-
-def _project() -> Path:
-    p = Path(os.environ.get("GDP_PROJECT", "")).expanduser()
-    if (p / "data").is_dir():
-        return p
-    here = Path.cwd()
-    for cand in (here, *here.parents):
-        if (cand / "data" / "processed").is_dir():
-            return cand
-    return here
 
 
 def _yoy(df_q: pd.DataFrame, level_col: str, out_col: str) -> pd.DataFrame:
@@ -82,7 +71,7 @@ def add_gst(master: pd.DataFrame, proj: Path,
 
 
 def main():
-    proj = _project()
+    proj = find_project()
     mpath = proj / "data" / "processed" / "composite_master_quarterly.csv"
     master = pd.read_csv(mpath)
 

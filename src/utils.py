@@ -6,6 +6,7 @@ collapse_monthly.py, make_repo_rate.py). Keeping them in one place means the
 fiscal-quarter logic is defined exactly once.
 """
 
+import os
 from pathlib import Path
 
 # Month name -> month number (used when a source labels months as text)
@@ -46,3 +47,15 @@ def find_one(folder, pattern):
     if not hits:
         raise FileNotFoundError(f"No file matching {pattern!r} in {folder}")
     return hits[0]
+
+
+def find_project():
+    """Project root = the directory containing data/processed.
+       Order: $GDP_PROJECT, then walk up from the current working directory."""
+    env = os.environ.get("GDP_PROJECT")
+    if env and (Path(env).expanduser() / "data").is_dir():
+        return Path(env).expanduser().resolve()
+    for cand in (Path.cwd(), *Path.cwd().parents):
+        if (cand / "data" / "processed").is_dir():
+            return cand
+    raise FileNotFoundError("Project root not found: run from inside the repo or set GDP_PROJECT")

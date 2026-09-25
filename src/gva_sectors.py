@@ -41,9 +41,9 @@ import seaborn as sns
 warnings.filterwarnings("ignore")
 
 try:
-    from utils import fy_quarter, order_key
+    from utils import fy_quarter, order_key, find_project
 except ImportError:
-    from .utils import fy_quarter, order_key
+    from .utils import fy_quarter, order_key, find_project
 
 sns.set_theme(style="whitegrid", context="notebook")
 plt.rcParams.update({"figure.dpi": 110, "savefig.dpi": 150,
@@ -75,17 +75,6 @@ SUBSECTOR_TO_HEAD = [
     ("other services",  "Services"),
 ]
 HEAD_ORDER = ["Agriculture", "Industry", "Services"]
-
-
-def _project() -> Path:
-    p = Path(os.environ.get("GDP_PROJECT", "")).expanduser()
-    if (p / "data").is_dir():
-        return p
-    here = Path.cwd()
-    for cand in (here, *here.parents):
-        if (cand / "data" / "processed").is_dir():
-            return cand
-    return here
 
 
 def _head_of(colname: str):
@@ -248,4 +237,4 @@ def build(proj: Path):
 
 
 if __name__ == "__main__":
-    build(_project())
+    build(find_project())

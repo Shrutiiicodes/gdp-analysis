@@ -37,17 +37,10 @@ warnings.filterwarnings("ignore")
 
 from statsmodels.tsa.stattools import adfuller, grangercausalitytests
 
-
-# --- project root auto-resolve (same pattern as the notebooks) ---------------
-def find_project() -> Path:
-    p = Path(os.environ.get("GDP_PROJECT", "")).expanduser()
-    if (p / "data").is_dir():
-        return p
-    here = Path.cwd()
-    for cand in (here, *here.parents):
-        if (cand / "data" / "processed").is_dir():
-            return cand
-    return here
+try:
+    from utils import find_project
+except ImportError:
+    from .utils import find_project
 
 
 # Default feature set = the notebook-02 model features. Add "BankCredit_YoY",
