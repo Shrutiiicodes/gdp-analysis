@@ -35,10 +35,10 @@ forecast horizon, and the discontinued old-base tail) — see notes.
 
 | Column | Description | Unit | Source | Collapse rule | Non-null |
 |---|---|---|---|---|---|
-| `FiscalDeficit_pct_GDP` | Central fiscal deficit as % of GDP, **annual** figure broadcast to the four quarters of the FY; FY2025-26 is the Budget Estimate | % | CGA / Union Budget | annual → 4 quarters | 60 |
+| `FiscalDeficit_pct_GDP` | Central fiscal deficit as % of GDP, **annual** figure broadcast to the four quarters of the FY; FY2025-26 and FY2026-27 (4.3%) are Budget Estimates | % | Union Budget | annual → 4 quarters | 63 |
 | `Repo_QtrAvg` | RBI repo rate, quarterly average (complete quarters only) | % | RBI | mean of months | 61 |
-| `CPI_Inflation` | Combined CPI inflation (2012 base; Jan–Mar 2026 YoY taken from the 2024=100 series, index level not carried) | % YoY | RBI/MoSPI | mean of months | 57 |
-| `IIP_growth` | Index of Industrial Production, headline growth | % YoY | MoSPI | mean of months | 56 |
+| `CPI_Inflation` | All-India Combined headline inflation (2010/2012/2024 bases spliced; Apr-May 2020 unpublished; latest quarter may be a partial-quarter mean) | % YoY | MoSPI eSankhyiki API | mean of months | 59 |
+| `IIP_growth` | Index of Industrial Production, General index growth (2011-12 base, 2022-23 base from Apr 2026; latest quarter may be partial) | % YoY | MoSPI eSankhyiki API | mean of months | 58 |
 | `INR_USD` | Rupee per US dollar, quarterly average | ₹/USD | RBI reference rates | mean of months | 61 |
 | `INR_USD_vol` | Within-quarter std. dev. of the monthly INR/USD | ₹/USD | RBI | std of months | 61 |
 | `Brent_USD` | Brent crude price, quarterly average | USD/bbl | FRED (MCOILBRENTEU) | mean of months | 62 |

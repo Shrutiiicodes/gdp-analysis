@@ -2,7 +2,7 @@
 run_all.py -- the whole pipeline in one command (from anywhere inside the repo):
 
     python run_all.py            # rebuild interim + master table, GVA view, notebooks 01-05, tests
-    python run_all.py --fetch    # same, but first refresh Brent (FRED) and the new-base GDP series (MoSPI API)
+    python run_all.py --fetch    # same, but first refresh Brent (FRED) and GDP / IIP / CPI (MoSPI API)
 
 Stops at the first failing build step and exits non-zero, so CI can gate on it.
 Fetch steps are best-effort: if a source is down we warn and build from the committed raw file.

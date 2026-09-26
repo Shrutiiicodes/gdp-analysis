@@ -75,15 +75,16 @@ fisc = pd.read_csv(INTERIM / "fiscal_deficit_pct_gdp_quarterly.csv")[
 repo = pd.read_csv(INTERIM / "repo_rate_quarterly_FY.csv")[
     ["FY_Quarter", "Repo_QtrAvg"]]
 
-cpi_file = find_one(INTERIM, "CPI_Combined_2012base_monthly_clean*.csv")
-cpi = pd.read_csv(cpi_file)
-cpi_q = (cpi.groupby("FY_Quarter", as_index=False)["CPI_Combined_Inflation_YoY_pct"]
-            .mean().rename(columns={"CPI_Combined_Inflation_YoY_pct": "CPI_Inflation"}))
+# --- CPI: All-India Combined headline inflation (MoSPI API via src/fetch_mospi.py)
+cpi = pd.read_csv(RAW / "cpi" / "mospi_cpi_combined_monthly.csv")
+cpi["FY_Quarter"] = [fy_quarter(d[:4], d[5:7]) for d in cpi["Date"]]
+cpi_q = (cpi.groupby("FY_Quarter", as_index=False)["inflation"]
+            .mean().rename(columns={"inflation": "CPI_Inflation"}))
 
 # 2b) COLLAPSE the raw monthly / fortnightly files
 
-# --- IIP: headline growth, averaged over the quarter
-iip = pd.read_excel(find_one(RAW / "iip", "iip_46.xlsx"))
+# --- IIP: headline (General) growth from the MoSPI API, averaged over the quarter
+iip = pd.read_csv(RAW / "iip" / "mospi_iip_general_monthly.csv")
 iip["m"] = iip["month"].map(MONTHS)
 iip["FY_Quarter"] = [fy_quarter(int(y), int(m)) for y, m in zip(iip["year"], iip["m"])]
 iip["growth_rate"] = pd.to_numeric(iip["growth_rate"], errors="coerce")

@@ -6,8 +6,8 @@ by sector — handling the February 2026 rebasing of the National Accounts from 
 2011-12 to 2022-23.
 
 ## What the project does
-1. Collects 12+ public macro indicators (the new-base GDP series straight from MoSPI's JSON API,
-   Brent from FRED, the rest from committed RBI/MoSPI files) into one quarterly master table.
+1. Collects 12+ public macro indicators (GDP, IIP and CPI straight from MoSPI's JSON API,
+   Brent from FRED, the rest from committed RBI files) into one quarterly master table.
 2. Engineers features, prunes redundant ones (correlation + VIF), and tests stationarity.
 3. Compares forecasting models under time-aware validation and identifies the top growth drivers.
 4. Forecasts GDP growth for FY2026-27 Q1 and Q2 (SARIMAX with a deterministic COVID dummy).
@@ -24,10 +24,10 @@ runs the tests; stops at the first failure):
 python run_all.py
 ```
 
-Add `--fetch` to refresh Brent from FRED first. That is the only source with a stable
-machine-readable endpoint; every other raw file under `data/raw/` is a manual download from
-MoSPI / RBI (see `docs/data_provenance.md`), so a data refresh is: drop the new files in, then
-`python run_all.py`. GitHub Actions (`.github/workflows/pipeline.yml`) runs the same command on
+Add `--fetch` to refresh the live sources first: Brent from FRED, and GDP, IIP and CPI from MoSPI's
+eSankhyiki API. The remaining raw files (RBI M3, FX, bank credit; the DBIE GVA sheet; the repo-rate
+changelog; the annual fiscal-deficit figure) are manual (see `docs/data_provenance.md`), so a data
+refresh is: drop the new files in, then `python run_all.py`. GitHub Actions (`.github/workflows/pipeline.yml`) runs the same command on
 every push and, on the 1st of each month, with `--fetch`, committing regenerated outputs.
 
 The individual steps, if you need just one:
@@ -78,8 +78,8 @@ gdp-analysis/
   data/
     raw/
       gdp/       # MoSPI: old-base statement xlsx (2011-12) + mospi_quarterly_constant_2022-23.csv <- src/fetch_mospi.py
-      cpi/       # RBI CPI monthly data
-      iip/       # MoSPI IIP monthly data
+      cpi/       # mospi_cpi_combined_monthly.csv <- src/fetch_mospi.py (All-India Combined headline)
+      iip/       # mospi_iip_general_monthly.csv  <- src/fetch_mospi.py (General index YoY)
       fx/        # RBI monthly average exchange rates
       crude/     # FRED Brent crude prices (MCOILBRENTEU.csv) <- refreshed by src/fetch_brent.py
       m3/        # RBI broad money supply (M3)
@@ -92,7 +92,6 @@ gdp-analysis/
       expenditure_components_quarterly_oldbase.csv
       gdp_growth_contributions_quarterly.csv
       gdp_growth_contributions_annual_FY.csv
-      CPI_Combined_2012base_monthly_clean.csv
       fiscal_deficit_pct_gdp_quarterly.csv
       gva_sectoral_quarterly.csv          <- produced by gva_sectors.py
     processed/
@@ -102,7 +101,7 @@ gdp-analysis/
   src/
     utils.py            # shared helpers (fiscal-quarter logic, file finding, project-root resolver)
     fetch_brent.py      # downloads Brent from FRED into data/raw/crude/
-    fetch_mospi.py      # downloads the 2022-23-base quarterly GDP + expenditure series from MoSPI's API
+    fetch_mospi.py      # downloads quarterly GDP + expenditure, monthly IIP and CPI from MoSPI's API
     collapse_monthly.py # monthly/fortnightly -> quarterly collapse functions
     make_repo_rate.py   # raw repo changelog -> monthly + quarterly repo files
     build_composite.py  # assembles the master table from all sources
@@ -127,10 +126,11 @@ gdp-analysis/
 
 ## Key results
 
-- **Best accuracy:** on the 8-quarter holdout the random-walk baseline (RMSE 0.96) is not
-  beaten; Ridge is within 0.07. Under 5-fold expanding-window CV every model is far worse in
-  absolute terms (Ridge / ElasticNet ≈ 3.3) but both beat the same-fold naive baseline (≈ 4.3).
-  The models' value is interpretability plus a modest, fold-robust edge, not a large accuracy gain.
+- **Best accuracy:** on the 8-quarter holdout (Q2 FY25 → Q1 FY27) the random-walk baseline
+  (RMSE 0.75) is not beaten; Ridge is next at 1.10. Under 5-fold expanding-window CV every model
+  is far worse in absolute terms, but Ridge (≈ 4.1) still beats the same-fold naive baseline
+  (≈ 5.1) while the sparser Lasso / ElasticNet do not. The models' value is interpretability plus
+  a modest, fold-robust edge for Ridge, not a large accuracy gain.
 - **Top predictors of growth:** industrial production (IIP) by a consensus of Lasso,
   permutation importance and SHAP; among external drivers it is followed by the fiscal
   deficit and rupee crude. GFCF ranks high too but is a component of GDP, so it is reported
@@ -154,7 +154,6 @@ gdp-analysis/
 
 ## Data sources
 
-MoSPI (GDP via the eSankhyiki JSON API for the 2022-23 base and the archived 2011-12-base statement,
-IIP, GVA), RBI (repo rate, CPI, M3, INR/USD reference rates, WSS bank credit), CGA / Union Budget
+MoSPI (GDP, IIP and CPI via the eSankhyiki JSON API, the archived 2011-12-base GDP statement, GVA), RBI (repo rate, CPI, M3, INR/USD reference rates, WSS bank credit), CGA / Union Budget
 (fiscal deficit), and FRED (Brent crude). See `docs/data_dictionary.md`
 for per-variable detail and `docs/decisions.md` for methodology choices.

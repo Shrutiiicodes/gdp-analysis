@@ -100,3 +100,23 @@ def test_master_new_base_comes_from_mospi_api_file():
     row = df.loc[df["FY_Quarter"] == last["FY_Quarter"]].iloc[0]
     assert row["GDP_level_new"] == last["GDP"]
     assert row["GDP_growth_source"] == "2022-23 base (spliced)"
+
+
+def test_splice_bases_prefers_older_base_then_fills_forward():
+    from fetch_mospi import splice_bases
+    old = pd.DataFrame({"m": pd.to_datetime(["2026-02-01", "2026-03-01"]), "v": [5.1, 4.1]})
+    new = pd.DataFrame({"m": pd.to_datetime(["2026-03-01", "2026-04-01"]), "v": [9.9, 6.7]})
+    out = splice_bases([("2011-12", old), ("2022-23", new)])
+    assert out["m"].dt.strftime("%Y-%m").tolist() == ["2026-02", "2026-03", "2026-04"]
+    assert out["v"].tolist() == [5.1, 4.1, 6.7]                    # overlap month keeps the older base
+    assert out["base_year"].tolist() == ["2011-12", "2011-12", "2022-23"]
+
+
+def test_master_iip_and_cpi_cover_latest_api_quarter():
+    from utils import fy_quarter
+    df = pd.read_csv(ROOT / "data" / "processed" / "composite_master_quarterly.csv").set_index("FY_Quarter")
+    iip = pd.read_csv(ROOT / "data" / "raw" / "iip" / "mospi_iip_general_monthly.csv")
+    cpi = pd.read_csv(ROOT / "data" / "raw" / "cpi" / "mospi_cpi_combined_monthly.csv")
+    q_iip = fy_quarter(iip["year"].iloc[-1], pd.to_datetime(iip["month"].iloc[-1], format="%B").month)
+    q_cpi = fy_quarter(int(cpi["Date"].iloc[-1][:4]), int(cpi["Date"].iloc[-1][5:7]))
+    assert pd.notna(df.loc[q_iip, "IIP_growth"]) and pd.notna(df.loc[q_cpi, "CPI_Inflation"])

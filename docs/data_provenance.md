@@ -11,8 +11,7 @@ where each one comes from so the pipeline is auditable.
 | `repo_rate_monthly_2011_2026.csv`, `repo_rate_quarterly_FY.csv` | `raw/repo/repo_rate_changelog.csv` | `src/make_repo_rate.py` | script-generated |
 | `expenditure_components_quarterly_oldbase.csv` | `raw/gdp/Statement_Quarterly_Constant_28.11.2025.xlsx` (expenditure block, 2011-12 base) | curated once (manual clean) | curated input |
 | `gdp_growth_contributions_quarterly.csv`, `gdp_growth_contributions_annual_FY.csv` | same old-base GDP statement (contributions-to-growth block) | curated once | curated input |
-| `CPI_Combined_2012base_monthly_clean.csv` | `raw/cpi/RBIB Table No. 19 ... (Base 2010=100).xlsx` | curated once | curated input. NB: RBI table is *titled* "Base 2010=100" but the series is the official CPI-Combined **2012=100** (index ≈100 across 2012). Only the base-invariant YoY rate is used, so base choice doesn't affect results. Jan–Mar 2026 inflation is the provisional 2024=100-base print (index not on the 2012 base); YoY is base-invariant so it is used as is. |
-| `fiscal_deficit_pct_gdp_quarterly.csv` | CGA monthly accounts / Union Budget (**no raw file in this repo**) | curated once, external | curated input |
+| `fiscal_deficit_pct_gdp_quarterly.csv` | Union Budget documents (**no raw file in this repo**); annual figure broadcast to four quarters. FY2026-27 = 4.3% Budget Estimate (Budget of 1 Feb 2026) | curated, extended by hand each Budget | curated input |
 
 ## GVA sectoral interim file (required for notebook 05 / `gva_sectors.py`)
 
@@ -41,11 +40,19 @@ corresponding raw files are present.
 ## Reproducibility notes
 
 - `make_repo_rate.py` and `gva_sectors.py` are fully script-generated from their raw inputs.
+- **MoSPI IIP and CPI are fetched automatically** by the same `src/fetch_mospi.py`:
+  `raw/iip/mospi_iip_general_monthly.csv` (General index YoY; 2011-12 base through Mar 2026, 2022-23 base
+  after — the API reproduces the previously committed `iip_46.xlsx` exactly) and
+  `raw/cpi/mospi_cpi_combined_monthly.csv` (All-India Combined headline inflation; 2010 base for 2012-13,
+  2012 base 2014-25, 2024 base from 2026; matches the previous curated file to 0.01 pp from 2014 on, while
+  2012-13 now come from the 2010 base and differ from the old curated values by up to 0.8 pp). MoSPI never
+  published CPI for April-May 2020 (lockdown), so 2020-21 Q1 inflation is the June reading only — the old
+  curated file carried imputed values there.
 - **Brent is fetched automatically**: `src/fetch_brent.py` downloads FRED series
   `MCOILBRENTEU` (https://fred.stlouisfed.org/graph/fredgraph.csv?id=MCOILBRENTEU) and writes it in the
   repo's DD-MM-YYYY layout. `python run_all.py --fetch` runs it before the build; the monthly GitHub
   Actions job does the same and commits the result.
-- **Every other raw file is a manual download.** MoSPI (IIP, GVA) and RBI (CPI, M3, FX,
+- **Every other raw file is a manual download.** MoSPI (GVA) and RBI (M3, FX,
   bank credit) publish Excel files whose URLs change per release and have no stable public API, so a data
   refresh is: download the new file, drop it into the matching `data/raw/<source>/` folder with the same
   name pattern the glob expects (see `build_composite.py`), then `python run_all.py`.

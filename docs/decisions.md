@@ -20,6 +20,13 @@ and revisited. Newest decisions at the bottom of each section.
 ## Base-year revision (the central issue)
 - **Two GDP vintages are carried, not one.** Old 2011-12 base (`*_old`) and new 2022-23 base
   (`*_new`), because MoSPI rebased on 27-Feb-2026.
+- **IIP and CPI come from the same MoSPI API.** `fetch_mospi.py` splices bases with one rule — keep the
+  older base for every month it covers, take the newer base only after it ends — because YoY rates are
+  close to base-invariant. The previously committed IIP file and curated CPI file were reproduced exactly
+  (IIP) and to 0.01 pp from 2014 (CPI); the 2012-13 CPI quarters now come from the official 2010 base
+  (up to 0.8 pp different) and Apr-May 2020 are unpublished.
+- **RBI's DBIE portal is not automated.** It sits behind a session-token gateway (SAP/CIMS) rather than a
+  plain HTTP API; scraping it would break on every portal change. M3, FX and bank credit stay manual.
 - **New base comes from MoSPI's JSON API, not a press-release spreadsheet.** `src/fetch_mospi.py`
   pulls the 2022-23-base quarterly GDP and expenditure levels (with every back-revision) from
   eSankhyiki; the spine's forecast horizon is derived from the latest quarter in that file, so
